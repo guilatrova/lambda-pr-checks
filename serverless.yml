@@ -1,0 +1,11 @@
+service: lambda-pr-checks
+
+provider:
+  name: aws
+  runtime: python3.7
+  environment:
+    GITHUB_TOKEN: TOKEN_PLACEHOLDER # change it
+
+functions:
+  pr_standard:
+    handler: handler.pr_standard
