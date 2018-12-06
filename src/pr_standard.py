@@ -12,7 +12,7 @@ OK_RESPONSE = {
 
 
 def _validate_pr_title(title):
-    return title.startswith("NO-TICKET") or re.match(r"\w+\-\d+")
+    return title.startswith("NO-TICKET") or bool(re.match(r"\w+\-\d+", title))
 
 
 def _update_pr_status(url, state, check_title, check_description):
