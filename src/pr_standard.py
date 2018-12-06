@@ -1,8 +1,15 @@
 import json
+import logging
 import os
 import re
 
 import requests
+
+logger = logging.getLogger()
+if logger.handlers:
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
+logging.basicConfig(level=logging.INFO)
 
 OK_RESPONSE = {
     "statusCode": 200,
@@ -34,12 +41,13 @@ def _update_pr_status(url, state, check_title, check_description):
 
 
 def _get_failure_response(gh_response):
+    logger.error("Error from gh:" + str(gh_response))
     return {**FAIL_RESPONSE, "body": gh_response.text}
 
 
 def handler(event, context):
     ghevent = json.loads(event.get("body"))
-    pr_url = ghevent["pull_request"]["url"]
+    pr_url = ghevent["pull_request"]["statuses_url"]
 
     if _validate_pr_title(ghevent["pull_request"]["title"]):
         gh_response = _update_pr_status(

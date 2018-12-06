@@ -1,6 +1,5 @@
 import json
 import os
-from collections import namedtuple
 from unittest.mock import MagicMock
 
 import pytest
@@ -93,6 +92,7 @@ def test_valid_title_with_ticket_ids():
 
 def test_lambda_handler(event_creator, incoming_github_payload, mocker):
     event = event_creator(incoming_github_payload)
+    github_payload = json.loads(event["body"])
     update_pr_status_mock = mocker.patch.object(
         pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
     )
@@ -101,7 +101,7 @@ def test_lambda_handler(event_creator, incoming_github_payload, mocker):
     response = pr_standard.handler(event, "")
 
     update_pr_status_mock.assert_called_once_with(
-        "https://api.github.com/repos/Codertocat/Hello-World/pulls/1",
+        github_payload["pull_request"]["statuses_url"],
         "success",
         "PR standard",
         "Your PR title is ok!",
@@ -112,6 +112,7 @@ def test_lambda_handler(event_creator, incoming_github_payload, mocker):
 
 def test_lambda_handler_invalid_pr(event_creator, incoming_github_payload, mocker):
     event = event_creator(incoming_github_payload)
+    github_payload = json.loads(event["body"])
     update_pr_status_mock = mocker.patch.object(
         pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
     )
@@ -120,7 +121,7 @@ def test_lambda_handler_invalid_pr(event_creator, incoming_github_payload, mocke
     response = pr_standard.handler(event, "")
 
     update_pr_status_mock.assert_called_once_with(
-        "https://api.github.com/repos/Codertocat/Hello-World/pulls/1",
+        github_payload["pull_request"]["statuses_url"],
         "failure",
         "PR standard",
         "Your PR title should start with NO-TICKET or a ticket id",
