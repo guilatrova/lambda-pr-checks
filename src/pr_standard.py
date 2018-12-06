@@ -36,6 +36,10 @@ def _validate_commits(commits):
     return True
 
 
+def _validate_pr(pull_request):
+    return _validate_title(pull_request["title"])
+
+
 def _update_pr_status(url, state, check_title, check_description):
     token = os.environ["GITHUB_TOKEN"]
     headers = {
@@ -57,7 +61,7 @@ def handler(event, context):
     ghevent = json.loads(event.get("body"))
     pr_url = ghevent["pull_request"]["statuses_url"]
 
-    if _validate_title(ghevent["pull_request"]["title"]):
+    if _validate_pr(ghevent["pull_request"]):
         gh_response = _update_pr_status(
             pr_url, "success", "PR standard", "Your PR title is ok!"
         )
