@@ -3,6 +3,7 @@ import os
 from collections import namedtuple
 
 import pytest
+
 from src import pr_standard
 
 
@@ -11,7 +12,7 @@ def incoming_github_payload():
     script_dir = os.path.dirname(__file__)
     file_path = os.path.join(script_dir, "../../src/pr_standard.json")
     with open(file_path) as data:
-        return data
+        return data.read()
 
 
 @pytest.fixture()
@@ -91,19 +92,18 @@ def test_valid_title_with_ticket_ids():
 
 def test_lambda_handler(event_creator, incoming_github_payload, mocker):
     event = event_creator(incoming_github_payload)
-    pass
-    # requests_response_mock = namedtuple("response", ["text"])
-    # requests_response_mock.text = "1.1.1.1\n"
+    update_pr_status_mock = mocker.patch.object(
+        pr_standard, "_update_pr_status", return_value={}
+    )
+    mocker.patch.object(pr_standard, "_validate_pr_title", return_value=True)
 
-    # request_mock = mocker.patch.object(
-    #     app.requests, "get", side_effect=requests_response_mock
-    # )
+    response = pr_standard.handler(event, "")
 
-    # ret = app.lambda_handler(apigw_event, "")
-    # assert ret["statusCode"] == 200
+    update_pr_status_mock.assert_called_once_with(
+        "https://api.github.com/repos/Codertocat/Hello-World/pulls/1",
+        "success",
+        "PR standard",
+        "Your PR title is ok!",
+    )
 
-    # for key in ("message", "location"):
-    #     assert key in ret["body"]
-
-    # data = json.loads(ret["body"])
-    # assert data["message"] == "hello world"
+    assert response == pr_standard.OK_RESPONSE

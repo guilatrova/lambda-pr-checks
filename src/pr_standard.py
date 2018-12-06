@@ -30,8 +30,8 @@ def _update_pr_status(url, state, check_title, check_description):
 def handler(event, context):
     ghevent = json.loads(event.get("body"))
 
-    pr_url = ghevent.pull_request.url
-    if _validate_pr_title(ghevent.pull_request.title):
+    pr_url = ghevent["pull_request"]["url"]
+    if _validate_pr_title(ghevent["pull_request"]["title"]):
         _update_pr_status(pr_url, "success", "PR standard", "Your PR title is ok!")
     else:
         _update_pr_status(
