@@ -107,6 +107,16 @@ def test_valid_commits_git_merge(valid_commits):
     assert pr_standard._validate_commits(valid_commits) is True
 
 
+def test_invalid_commits(valid_commits):
+    valid_commits.append(
+        {
+            "sha": "901",
+            "commit": {"message": "Did some work with an invalid commit message"},
+        }
+    )
+    assert pr_standard._validate_commits(valid_commits) is False
+
+
 def test_lambda_handler(event_creator, incoming_github_payload, mocker):
     event = event_creator(incoming_github_payload)
     github_payload = json.loads(event["body"])
