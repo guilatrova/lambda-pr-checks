@@ -30,7 +30,8 @@ def _validate_title(title):
 
 def _validate_commits(commits):
     for commit_parent in commits:
-        if not _validate_title(commit_parent["commit"]["message"]):
+        message = commit_parent["commit"]["message"]
+        if not message.lower().startswith("merge") and not _validate_title(message):
             return False
 
     return True

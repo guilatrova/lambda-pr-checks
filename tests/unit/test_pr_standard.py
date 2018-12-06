@@ -102,6 +102,11 @@ def test_valid_commits(valid_commits):
     assert pr_standard._validate_commits(valid_commits) is True
 
 
+def test_valid_commits_git_merge(valid_commits):
+    valid_commits.append({"sha": "789", "commit": {"message": "Merge pull request"}})
+    assert pr_standard._validate_commits(valid_commits) is True
+
+
 def test_lambda_handler(event_creator, incoming_github_payload, mocker):
     event = event_creator(incoming_github_payload)
     github_payload = json.loads(event["body"])
