@@ -75,6 +75,14 @@ def event_creator():
     return _generator
 
 
+@pytest.fixture
+def valid_commits():
+    return [
+        {"sha": "123", "commit": {"message": "NO-TICKET Changed"}},
+        {"sha": "456", "commit": {"message": "FY-1234 Do work"}},
+    ]
+
+
 def test_invalid_pr_title():
     assert pr_standard._validate_pr_title("Improved scripts") is False
 
@@ -88,6 +96,10 @@ def test_valid_title_with_ticket_ids():
     assert pr_standard._validate_pr_title("FTL-8721 Backlog Ticket") is True
     assert pr_standard._validate_pr_title("COM-7789 Jira Ticket") is True
     assert pr_standard._validate_pr_title("ABC-2222 Random ticket") is True
+
+
+def test_valid_commits(valid_commits):
+    assert pr_standard._validate_commits(valid_commits) is True
 
 
 def test_lambda_handler(event_creator, incoming_github_payload, mocker):

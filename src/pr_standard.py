@@ -28,6 +28,14 @@ def _validate_pr_title(title):
     return title.startswith("NO-TICKET") or bool(re.match(r"\w+\-\d+", title))
 
 
+def _validate_commits(commits):
+    for commit_parent in commits:
+        if not _validate_pr_title(commit_parent["commit"]["message"]):
+            return False
+
+    return True
+
+
 def _update_pr_status(url, state, check_title, check_description):
     token = os.environ["GITHUB_TOKEN"]
     headers = {
