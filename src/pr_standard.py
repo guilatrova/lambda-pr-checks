@@ -27,7 +27,7 @@ def _update_pr_status(url, state, check_title, check_description):
     requests.post(url, json=body, headers=headers)
 
 
-def pr_standard(event, context):
+def handler(event, context):
     ghevent = json.loads(event.get("body"))
 
     pr_url = ghevent.pull_request.url
@@ -42,26 +42,3 @@ def pr_standard(event, context):
         )
 
     return OK_RESPONSE
-
-
-# def hello(event, context):
-#     body = {
-#         "message": "Go Serverless v1.0! Your function executed successfully!",
-#         "input": event
-#     }
-
-#     response = {
-#         "statusCode": 200,
-#         "body": json.dumps(body)
-#     }
-
-#     return response
-
-#     # Use this code if you don't use the http event with the LAMBDA-PROXY
-#     # integration
-#     """
-#     return {
-#         "message": "Go Serverless v1.0! Your function executed successfully!",
-#         "event": event
-#     }
-#     """
