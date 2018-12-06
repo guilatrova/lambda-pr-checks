@@ -10,7 +10,7 @@ from src import pr_standard
 @pytest.fixture()
 def incoming_github_payload():
     script_dir = os.path.dirname(__file__)
-    file_path = os.path.join(script_dir, "../../src/pr_standard.json")
+    file_path = os.path.join(script_dir, "../payloads/pr_standard.json")
     with open(file_path) as data:
         return data.read()
 
