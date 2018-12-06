@@ -28,7 +28,9 @@ def _validate_title(title):
     return title.startswith("NO-TICKET") or bool(re.match(r"\w+\-\d+", title))
 
 
-def _validate_commits(commits):
+def _validate_commits(pull_request):
+    commits = _get_commits(pull_request["commits_url"])
+
     for commit_parent in commits:
         message = commit_parent["commit"]["message"]
         if not message.lower().startswith("merge") and not _validate_title(message):
@@ -37,8 +39,13 @@ def _validate_commits(commits):
     return True
 
 
+def _get_commits(url):
+    pass
+
+
 def _validate_pr(pull_request):
     if _validate_title(pull_request["title"]):
+
         return True, "Your PR title is ok!"
     else:
         return False, "Your PR title should start with NO-TICKET or a ticket id"

@@ -98,23 +98,26 @@ def test_valid_title_with_ticket_ids():
     assert pr_standard._validate_title("ABC-2222 Random ticket") is True
 
 
-def test_valid_commits(valid_commits):
-    assert pr_standard._validate_commits(valid_commits) is True
+def test_valid_commits(valid_commits, mocker):
+    mocker.patch.object(pr_standard, "_get_commits", return_value=valid_commits)
+    assert pr_standard._validate_commits({"commits_url": ""}) is True
 
 
-def test_valid_commits_git_merge(valid_commits):
+def test_valid_commits_git_merge(valid_commits, mocker):
     valid_commits.append({"sha": "789", "commit": {"message": "Merge pull request"}})
-    assert pr_standard._validate_commits(valid_commits) is True
+    mocker.patch.object(pr_standard, "_get_commits", return_value=valid_commits)
+    assert pr_standard._validate_commits({"commits_url": ""}) is True
 
 
-def test_invalid_commits(valid_commits):
+def test_invalid_commits(valid_commits, mocker):
+    mocker.patch.object(pr_standard, "_get_commits", return_value=valid_commits)
     valid_commits.append(
         {
             "sha": "901",
             "commit": {"message": "Did some work with an invalid commit message"},
         }
     )
-    assert pr_standard._validate_commits(valid_commits) is False
+    assert pr_standard._validate_commits({"commits_url": ""}) is False
 
 
 def test_lambda_handler(event_creator, incoming_github_payload, mocker):
