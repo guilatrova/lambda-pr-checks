@@ -42,9 +42,8 @@ def test_invalid_commits(valid_commits, mocker):
     assert pr_standard._validate_commits({"commits_url": ""}) is False
 
 
-def test_pr_update(mocker):
-    GITHUB_TOKEN = "123456"
-    mocker.patch.dict(os.environ, {"GITHUB_TOKEN": GITHUB_TOKEN})
+def test_update_pr_status(mocker):
+    mocker.patch.dict(os.environ, {"GITHUB_TOKEN": "123456"})
     request = mocker.patch.object(pr_standard.requests, "post", return_value=None)
 
     headers = pr_standard._get_gh_headers()
@@ -55,6 +54,16 @@ def test_pr_update(mocker):
         json={"context": "context", "state": "state", "description": "description"},
         headers=headers,
     )
+
+
+def test_get_commits(mocker):
+    mocker.patch.dict(os.environ, {"GITHUB_TOKEN": "123456"})
+    request = mocker.patch.object(pr_standard.requests, "get", return_value=MagicMock())
+
+    headers = pr_standard._get_gh_headers()
+    pr_standard._get_commits("url")
+
+    request.assert_called_once_with("url", headers=headers)
 
 
 def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
