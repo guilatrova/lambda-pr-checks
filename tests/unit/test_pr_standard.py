@@ -2,7 +2,7 @@ import json
 import os
 from unittest.mock import MagicMock
 
-from src import pr_standard
+from src import github, pr_standard
 
 
 def test_invalid_pr_title():
@@ -21,18 +21,18 @@ def test_valid_title_with_ticket_ids():
 
 
 def test_valid_commits(valid_commits, mocker):
-    mocker.patch.object(pr_standard, "_get_commits", return_value=valid_commits)
+    mocker.patch.object(pr_standard.github, "get_commits", return_value=valid_commits)
     assert pr_standard._validate_commits({"commits_url": ""}) is True
 
 
 def test_valid_commits_git_merge(valid_commits, mocker):
     valid_commits.append({"sha": "789", "commit": {"message": "Merge pull request"}})
-    mocker.patch.object(pr_standard, "_get_commits", return_value=valid_commits)
+    mocker.patch.object(pr_standard.github, "get_commits", return_value=valid_commits)
     assert pr_standard._validate_commits({"commits_url": ""}) is True
 
 
 def test_invalid_commits(valid_commits, mocker):
-    mocker.patch.object(pr_standard, "_get_commits", return_value=valid_commits)
+    mocker.patch.object(pr_standard.github, "get_commits", return_value=valid_commits)
     valid_commits.append(
         {
             "sha": "901",
@@ -42,35 +42,11 @@ def test_invalid_commits(valid_commits, mocker):
     assert pr_standard._validate_commits({"commits_url": ""}) is False
 
 
-def test_update_pr_status(mocker):
-    mocker.patch.dict(os.environ, {"GITHUB_TOKEN": "123456"})
-    request = mocker.patch.object(pr_standard.requests, "post", return_value=None)
-
-    headers = pr_standard._get_gh_headers()
-    pr_standard._update_pr_status("url", "state", "context", "description")
-
-    request.assert_called_once_with(
-        "url",
-        json={"context": "context", "state": "state", "description": "description"},
-        headers=headers,
-    )
-
-
-def test_get_commits(mocker):
-    mocker.patch.dict(os.environ, {"GITHUB_TOKEN": "123456"})
-    request = mocker.patch.object(pr_standard.requests, "get", return_value=MagicMock())
-
-    headers = pr_standard._get_gh_headers()
-    pr_standard._get_commits("url")
-
-    request.assert_called_once_with("url", headers=headers)
-
-
 def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
     event = event_creator(incoming_open_pr_payload)
     github_payload = json.loads(event["body"])
     update_pr_status_mock = mocker.patch.object(
-        pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
+        pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
     )
     mocker.patch.object(pr_standard, "_validate_title", return_value=True)
     mocker.patch.object(pr_standard, "_validate_commits", return_value=True)
@@ -91,7 +67,7 @@ def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mock
     event = event_creator(incoming_open_pr_payload)
     github_payload = json.loads(event["body"])
     update_pr_status_mock = mocker.patch.object(
-        pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
+        pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
     )
     mocker.patch.object(pr_standard, "_validate_title", return_value=False)
 
@@ -116,8 +92,8 @@ def test_lambda_handler_failing_gh_hook(
     mocker.patch.object(pr_standard, "_validate_title", return_value=True)
     mocker.patch.object(pr_standard, "_validate_commits", return_value=True)
     mocker.patch.object(
-        pr_standard,
-        "_update_pr_status",
+        pr_standard.github,
+        "update_pr_status",
         return_value=MagicMock(ok=False, text=gh_error),
     )
 

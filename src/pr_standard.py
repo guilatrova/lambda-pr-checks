@@ -1,9 +1,8 @@
 import json
 import logging
-import os
 import re
 
-import requests
+from src import github
 
 logger = logging.getLogger()
 if logger.handlers:
@@ -33,7 +32,7 @@ def _validate_title(title):
 
 
 def _validate_commits(pull_request):
-    commits = _get_commits(pull_request["commits_url"])
+    commits = github.get_commits(pull_request["commits_url"])
 
     for commit_parent in commits:
         message = commit_parent["commit"]["message"]
@@ -41,12 +40,6 @@ def _validate_commits(pull_request):
             return False
 
     return True
-
-
-def _get_commits(url):
-    headers = _get_gh_headers()
-    response = requests.get(url, headers=headers)
-    return response.json()
 
 
 def _validate_pr(pull_request):
@@ -57,21 +50,6 @@ def _validate_pr(pull_request):
             return False, PR_COMMITS_FAILURE_MESSAGE
     else:
         return False, PR_TITLE_FAILURE_MESSAGE
-
-
-def _get_gh_headers():
-    token = os.environ["GITHUB_TOKEN"]
-    return {
-        "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json",
-    }
-
-
-def _update_pr_status(url, state, check_title, check_description):
-    headers = _get_gh_headers()
-    body = {"context": check_title, "description": check_description, "state": state}
-
-    return requests.post(url, json=body, headers=headers)
 
 
 def _get_failure_response(gh_response):
@@ -86,7 +64,7 @@ def handler(event, context):
     valid_pr, reason = _validate_pr(ghevent["pull_request"])
     status = "success" if valid_pr else "failure"
 
-    gh_response = _update_pr_status(status_url, status, "PR standard", reason)
+    gh_response = github.update_pr_status(status_url, status, "PR standard", reason)
 
     if gh_response.ok:
         return OK_RESPONSE
