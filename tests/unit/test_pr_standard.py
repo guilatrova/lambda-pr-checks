@@ -80,7 +80,7 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
         github_payload["pull_request"]["statuses_url"],
         "success",
         "PR standard",
-        "Your PR title is ok!",
+        pr_standard.SUCCESS_MESSAGE,
     )
 
     assert response == pr_standard.OK_RESPONSE
@@ -100,7 +100,7 @@ def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mock
         github_payload["pull_request"]["statuses_url"],
         "failure",
         "PR standard",
-        "Your PR title should start with NO-TICKET or a ticket id",
+        pr_standard.PR_TITLE_FAILURE_MESSAGE,
     )
 
     assert response == pr_standard.OK_RESPONSE

@@ -11,6 +11,9 @@ if logger.handlers:
         logger.removeHandler(handler)
 logging.basicConfig(level=logging.INFO)
 
+SUCCESS_MESSAGE = "Your PR is ok!"
+PR_TITLE_FAILURE_MESSAGE = "Your PR title should start with NO-TICKET or a ticket id"
+
 OK_RESPONSE = {
     "statusCode": 200,
     "headers": {"Content-Type": "application/json"},
@@ -47,10 +50,10 @@ def _get_commits(url):
 
 def _validate_pr(pull_request):
     if _validate_title(pull_request["title"]):
-
-        return True, "Your PR title is ok!"
+        # if _validate_commits(pull_request):
+        return True, SUCCESS_MESSAGE
     else:
-        return False, "Your PR title should start with NO-TICKET or a ticket id"
+        return False, PR_TITLE_FAILURE_MESSAGE
 
 
 def _get_gh_headers():
