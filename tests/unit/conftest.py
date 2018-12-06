@@ -16,11 +16,6 @@ def incoming_open_pr_payload():
 
 
 @pytest.fixture()
-def incoming_pr_commits_payload():
-    return _read_payload("pr_commits")
-
-
-@pytest.fixture()
 def event_creator():
     def _generator(body):
         """ Generates API GW Event"""

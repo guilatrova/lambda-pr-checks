@@ -40,7 +40,9 @@ def _validate_commits(pull_request):
 
 
 def _get_commits(url):
-    pass
+    headers = _get_gh_headers()
+    response = requests.get(url, headers=headers)
+    return response.json()
 
 
 def _validate_pr(pull_request):

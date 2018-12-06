@@ -1,4 +1,5 @@
 import json
+import os
 from unittest.mock import MagicMock
 
 from src import pr_standard
@@ -39,6 +40,21 @@ def test_invalid_commits(valid_commits, mocker):
         }
     )
     assert pr_standard._validate_commits({"commits_url": ""}) is False
+
+
+def test_pr_update(mocker):
+    GITHUB_TOKEN = "123456"
+    mocker.patch.dict(os.environ, {"GITHUB_TOKEN": GITHUB_TOKEN})
+    request = mocker.patch.object(pr_standard.requests, "post", return_value=None)
+
+    headers = pr_standard._get_gh_headers()
+    pr_standard._update_pr_status("url", "state", "context", "description")
+
+    request.assert_called_once_with(
+        "url",
+        json={"context": "context", "state": "state", "description": "description"},
+        headers=headers,
+    )
 
 
 def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
