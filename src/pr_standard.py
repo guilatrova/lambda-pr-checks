@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 SUCCESS_MESSAGE = "Your PR is ok!"
 PR_TITLE_FAILURE_MESSAGE = "Your PR title should start with NO-TICKET or a ticket id"
+PR_COMMITS_FAILURE_MESSAGE = "Your PR has some commits with invalid format"
 
 OK_RESPONSE = {
     "statusCode": 200,
@@ -50,8 +51,10 @@ def _get_commits(url):
 
 def _validate_pr(pull_request):
     if _validate_title(pull_request["title"]):
-        # if _validate_commits(pull_request):
-        return True, SUCCESS_MESSAGE
+        if _validate_commits(pull_request):
+            return True, SUCCESS_MESSAGE
+        else:
+            return False, PR_COMMITS_FAILURE_MESSAGE
     else:
         return False, PR_TITLE_FAILURE_MESSAGE
 

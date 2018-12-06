@@ -73,6 +73,7 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
         pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
     )
     mocker.patch.object(pr_standard, "_validate_title", return_value=True)
+    mocker.patch.object(pr_standard, "_validate_commits", return_value=True)
 
     response = pr_standard.handler(event, "")
 
@@ -113,6 +114,7 @@ def test_lambda_handler_failing_gh_hook(
     gh_error = json.dumps({"text": "A crazy error just happened"})
 
     mocker.patch.object(pr_standard, "_validate_title", return_value=True)
+    mocker.patch.object(pr_standard, "_validate_commits", return_value=True)
     mocker.patch.object(
         pr_standard,
         "_update_pr_status",
