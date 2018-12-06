@@ -10,6 +10,12 @@ OK_RESPONSE = {
     "body": json.dumps("ok"),
 }
 
+FAIL_RESPONSE = {
+    "statusCode": 500,
+    "headers": {"Content-Type": "application/json"},
+    "body": "",
+}
+
 
 def _validate_pr_title(title):
     return title.startswith("NO-TICKET") or bool(re.match(r"\w+\-\d+", title))
@@ -24,21 +30,30 @@ def _update_pr_status(url, state, check_title, check_description):
 
     body = {"context": check_title, "description": check_description, "state": state}
 
-    requests.post(url, json=body, headers=headers)
+    return requests.post(url, json=body, headers=headers)
+
+
+def _get_failure_response(gh_response):
+    return {**FAIL_RESPONSE, "body": gh_response.text}
 
 
 def handler(event, context):
     ghevent = json.loads(event.get("body"))
-
     pr_url = ghevent["pull_request"]["url"]
+
     if _validate_pr_title(ghevent["pull_request"]["title"]):
-        _update_pr_status(pr_url, "success", "PR standard", "Your PR title is ok!")
+        gh_response = _update_pr_status(
+            pr_url, "success", "PR standard", "Your PR title is ok!"
+        )
     else:
-        _update_pr_status(
+        gh_response = _update_pr_status(
             pr_url,
             "failure",
             "PR standard",
             "Your PR title should start with NO-TICKET or a ticket id",
         )
 
-    return OK_RESPONSE
+    if gh_response.ok:
+        return OK_RESPONSE
+
+    return _get_failure_response(gh_response)

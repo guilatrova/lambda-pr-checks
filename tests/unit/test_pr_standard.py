@@ -1,6 +1,7 @@
 import json
 import os
 from collections import namedtuple
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -93,7 +94,7 @@ def test_valid_title_with_ticket_ids():
 def test_lambda_handler(event_creator, incoming_github_payload, mocker):
     event = event_creator(incoming_github_payload)
     update_pr_status_mock = mocker.patch.object(
-        pr_standard, "_update_pr_status", return_value={}
+        pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
     )
     mocker.patch.object(pr_standard, "_validate_pr_title", return_value=True)
 
@@ -107,3 +108,41 @@ def test_lambda_handler(event_creator, incoming_github_payload, mocker):
     )
 
     assert response == pr_standard.OK_RESPONSE
+
+
+def test_lambda_handler_invalid_pr(event_creator, incoming_github_payload, mocker):
+    event = event_creator(incoming_github_payload)
+    update_pr_status_mock = mocker.patch.object(
+        pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
+    )
+    mocker.patch.object(pr_standard, "_validate_pr_title", return_value=False)
+
+    response = pr_standard.handler(event, "")
+
+    update_pr_status_mock.assert_called_once_with(
+        "https://api.github.com/repos/Codertocat/Hello-World/pulls/1",
+        "failure",
+        "PR standard",
+        "Your PR title should start with NO-TICKET or a ticket id",
+    )
+
+    assert response == pr_standard.OK_RESPONSE
+
+
+def test_lambda_handler_failing_gh_hook(event_creator, incoming_github_payload, mocker):
+    event = event_creator(incoming_github_payload)
+    gh_error = json.dumps({"text": "A crazy error just happened"})
+
+    mocker.patch.object(pr_standard, "_validate_pr_title", return_value=True)
+    mocker.patch.object(
+        pr_standard,
+        "_update_pr_status",
+        return_value=MagicMock(ok=False, text=gh_error),
+    )
+
+    response = pr_standard.handler(event, "")
+
+    assert response["statusCode"] == pr_standard.FAIL_RESPONSE["statusCode"]
+    assert response["headers"] == pr_standard.FAIL_RESPONSE["headers"]
+    assert "body" in response
+    assert len(response["body"]) > 0
