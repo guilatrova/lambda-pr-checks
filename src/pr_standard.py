@@ -65,11 +65,9 @@ def handler(event, context):
     pr_url = ghevent["pull_request"]["statuses_url"]
 
     valid_pr, reason = _validate_pr(ghevent["pull_request"])
+    status = "success" if valid_pr else "failure"
 
-    if valid_pr:
-        gh_response = _update_pr_status(pr_url, "success", "PR standard", reason)
-    else:
-        gh_response = _update_pr_status(pr_url, "failure", "PR standard", reason)
+    gh_response = _update_pr_status(pr_url, status, "PR standard", reason)
 
     if gh_response.ok:
         return OK_RESPONSE
