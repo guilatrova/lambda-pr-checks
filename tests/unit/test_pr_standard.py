@@ -41,8 +41,8 @@ def test_invalid_commits(valid_commits, mocker):
     assert pr_standard._validate_commits({"commits_url": ""}) is False
 
 
-def test_lambda_handler(event_creator, incoming_github_payload, mocker):
-    event = event_creator(incoming_github_payload)
+def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
+    event = event_creator(incoming_open_pr_payload)
     github_payload = json.loads(event["body"])
     update_pr_status_mock = mocker.patch.object(
         pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
@@ -61,8 +61,8 @@ def test_lambda_handler(event_creator, incoming_github_payload, mocker):
     assert response == pr_standard.OK_RESPONSE
 
 
-def test_lambda_handler_invalid_pr(event_creator, incoming_github_payload, mocker):
-    event = event_creator(incoming_github_payload)
+def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mocker):
+    event = event_creator(incoming_open_pr_payload)
     github_payload = json.loads(event["body"])
     update_pr_status_mock = mocker.patch.object(
         pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
@@ -81,8 +81,10 @@ def test_lambda_handler_invalid_pr(event_creator, incoming_github_payload, mocke
     assert response == pr_standard.OK_RESPONSE
 
 
-def test_lambda_handler_failing_gh_hook(event_creator, incoming_github_payload, mocker):
-    event = event_creator(incoming_github_payload)
+def test_lambda_handler_failing_gh_hook(
+    event_creator, incoming_open_pr_payload, mocker
+):
+    event = event_creator(incoming_open_pr_payload)
     gh_error = json.dumps({"text": "A crazy error just happened"})
 
     mocker.patch.object(pr_standard, "_validate_title", return_value=True)

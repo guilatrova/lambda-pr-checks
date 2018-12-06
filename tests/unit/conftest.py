@@ -3,12 +3,21 @@ import os
 import pytest
 
 
-@pytest.fixture()
-def incoming_github_payload():
+def _read_payload(filename):
     script_dir = os.path.dirname(__file__)
-    file_path = os.path.join(script_dir, "../payloads/open_pr_event.json")
+    file_path = os.path.join(script_dir, f"../payloads/{filename}.json")
     with open(file_path) as data:
         return data.read()
+
+
+@pytest.fixture()
+def incoming_open_pr_payload():
+    return _read_payload("open_pr_event")
+
+
+@pytest.fixture()
+def incoming_pr_commits_payload():
+    return _read_payload("pr_commits")
 
 
 @pytest.fixture()
