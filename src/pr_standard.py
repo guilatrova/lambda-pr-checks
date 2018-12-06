@@ -37,7 +37,10 @@ def _validate_commits(commits):
 
 
 def _validate_pr(pull_request):
-    return _validate_title(pull_request["title"])
+    if _validate_title(pull_request["title"]):
+        return True, "Your PR title is ok!"
+    else:
+        return False, "Your PR title should start with NO-TICKET or a ticket id"
 
 
 def _update_pr_status(url, state, check_title, check_description):
@@ -61,17 +64,12 @@ def handler(event, context):
     ghevent = json.loads(event.get("body"))
     pr_url = ghevent["pull_request"]["statuses_url"]
 
-    if _validate_pr(ghevent["pull_request"]):
-        gh_response = _update_pr_status(
-            pr_url, "success", "PR standard", "Your PR title is ok!"
-        )
+    valid_pr, reason = _validate_pr(ghevent["pull_request"])
+
+    if valid_pr:
+        gh_response = _update_pr_status(pr_url, "success", "PR standard", reason)
     else:
-        gh_response = _update_pr_status(
-            pr_url,
-            "failure",
-            "PR standard",
-            "Your PR title should start with NO-TICKET or a ticket id",
-        )
+        gh_response = _update_pr_status(pr_url, "failure", "PR standard", reason)
 
     if gh_response.ok:
         return OK_RESPONSE
