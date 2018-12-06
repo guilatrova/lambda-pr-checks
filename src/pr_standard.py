@@ -24,13 +24,13 @@ FAIL_RESPONSE = {
 }
 
 
-def _validate_pr_title(title):
+def _validate_title(title):
     return title.startswith("NO-TICKET") or bool(re.match(r"\w+\-\d+", title))
 
 
 def _validate_commits(commits):
     for commit_parent in commits:
-        if not _validate_pr_title(commit_parent["commit"]["message"]):
+        if not _validate_title(commit_parent["commit"]["message"]):
             return False
 
     return True
@@ -57,7 +57,7 @@ def handler(event, context):
     ghevent = json.loads(event.get("body"))
     pr_url = ghevent["pull_request"]["statuses_url"]
 
-    if _validate_pr_title(ghevent["pull_request"]["title"]):
+    if _validate_title(ghevent["pull_request"]["title"]):
         gh_response = _update_pr_status(
             pr_url, "success", "PR standard", "Your PR title is ok!"
         )

@@ -84,18 +84,18 @@ def valid_commits():
 
 
 def test_invalid_pr_title():
-    assert pr_standard._validate_pr_title("Improved scripts") is False
+    assert pr_standard._validate_title("Improved scripts") is False
 
 
 def test_valid_title_no_ticket():
-    assert pr_standard._validate_pr_title("NO-TICKET Improved scripts") is True
+    assert pr_standard._validate_title("NO-TICKET Improved scripts") is True
 
 
 def test_valid_title_with_ticket_ids():
-    assert pr_standard._validate_pr_title("FY-1234 Jira Ticket") is True
-    assert pr_standard._validate_pr_title("FTL-8721 Backlog Ticket") is True
-    assert pr_standard._validate_pr_title("COM-7789 Jira Ticket") is True
-    assert pr_standard._validate_pr_title("ABC-2222 Random ticket") is True
+    assert pr_standard._validate_title("FY-1234 Jira Ticket") is True
+    assert pr_standard._validate_title("FTL-8721 Backlog Ticket") is True
+    assert pr_standard._validate_title("COM-7789 Jira Ticket") is True
+    assert pr_standard._validate_title("ABC-2222 Random ticket") is True
 
 
 def test_valid_commits(valid_commits):
@@ -108,7 +108,7 @@ def test_lambda_handler(event_creator, incoming_github_payload, mocker):
     update_pr_status_mock = mocker.patch.object(
         pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
     )
-    mocker.patch.object(pr_standard, "_validate_pr_title", return_value=True)
+    mocker.patch.object(pr_standard, "_validate_title", return_value=True)
 
     response = pr_standard.handler(event, "")
 
@@ -128,7 +128,7 @@ def test_lambda_handler_invalid_pr(event_creator, incoming_github_payload, mocke
     update_pr_status_mock = mocker.patch.object(
         pr_standard, "_update_pr_status", return_value=MagicMock(ok=True)
     )
-    mocker.patch.object(pr_standard, "_validate_pr_title", return_value=False)
+    mocker.patch.object(pr_standard, "_validate_title", return_value=False)
 
     response = pr_standard.handler(event, "")
 
@@ -146,7 +146,7 @@ def test_lambda_handler_failing_gh_hook(event_creator, incoming_github_payload, 
     event = event_creator(incoming_github_payload)
     gh_error = json.dumps({"text": "A crazy error just happened"})
 
-    mocker.patch.object(pr_standard, "_validate_pr_title", return_value=True)
+    mocker.patch.object(pr_standard, "_validate_title", return_value=True)
     mocker.patch.object(
         pr_standard,
         "_update_pr_status",
