@@ -1,7 +1,10 @@
 import os
 from urllib.parse import parse_qs
 
-from src import github
+try:
+    import github
+except ModuleNotFoundError:
+    from src import github  # For tests
 
 OK_RESPONSE = {"statusCode": 200, "headers": {"Content-Type": "text/plain"}}
 
