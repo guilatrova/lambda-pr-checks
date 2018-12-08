@@ -10,6 +10,7 @@ def _extract_command(raw):
     for key, value in parsed.items():
         result[key] = value[0].strip()
 
+    # Handle text to separate main text from args
     text = result["text"].split()
     result["text"] = text[0]
     result["args"] = text[1:]
@@ -17,10 +18,14 @@ def _extract_command(raw):
     return result
 
 
+def _freeze(command):
+    pass
+
+
 def handler(event, context):
     slack_command = _extract_command(event.get("body"))
 
-    return {
-        **OK_RESPONSE,
-        "body": "You're really called " + slack_command["user_name"][0],
-    }
+    if slack_command["text"] == "enable":
+        _freeze(slack_command)
+
+    return {**OK_RESPONSE, "body": "ok"}
