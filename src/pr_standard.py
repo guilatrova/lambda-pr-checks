@@ -2,7 +2,10 @@ import json
 import logging
 import re
 
-from src import github
+try:
+    import github
+except ModuleNotFoundError:
+    from . import github  # For tests
 
 logger = logging.getLogger()
 if logger.handlers:
