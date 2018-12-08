@@ -32,7 +32,9 @@ def test_enable_freeze(mocker):
 
     codefreezer._freeze({"text": "enable"})
     open_pr_mock.assert_called_once_with(repos)
-    update_pr_mock.assert_called_once_with("correct_url", "failure", "CodeFreeze")
+    update_pr_mock.assert_called_once_with(
+        "correct_url", "failure", "CodeFreeze", codefreezer.CODE_FREEZE_ENABLED_MESSAGE
+    )
 
 
 def test_disable_freeze(mocker):
@@ -49,7 +51,7 @@ def test_disable_freeze(mocker):
 
     codefreezer._freeze({"text": "disable"})
     open_pr_mock.assert_called_once_with(repos)
-    update_pr_mock.assert_called_once_with("correct_url", "success", "CodeFreeze")
+    update_pr_mock.assert_called_once_with("correct_url", "success", "CodeFreeze", "")
 
 
 def test_handler_calls_correct_functions(event_creator, incoming_slack_command, mocker):

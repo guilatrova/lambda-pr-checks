@@ -57,7 +57,7 @@ def get_open_prs(repo):
     headers = _get_gh_headers()
 
     response = requests.get(url, headers=headers)
-    return response.json
+    return response.json()
 
 
 def write_error_summary(url, analyzed):
