@@ -3,8 +3,10 @@ from urllib.parse import parse_qs
 
 try:
     import github
-except ModuleNotFoundError:
-    from src import github  # For tests
+    import dynamodb
+except ModuleNotFoundError:  # For tests
+    from src import github
+    from src import dynamodb
 
 OK_RESPONSE = {"statusCode": 200, "headers": {"Content-Type": "text/plain"}}
 CODE_FREEZE_ENABLED_MESSAGE = (
@@ -30,11 +32,16 @@ def _extract_command(raw):
 def _freeze(command):
     if command["text"] == "enable":
         pr_state = "failure"
+        status = "enabled"
         description = CODE_FREEZE_ENABLED_MESSAGE
     else:
         pr_state = "success"
+        status = "disabled"
         description = ""
 
+    dynamodb.write_config(
+        dynamodb.FREEZE_CONFIG, Status=status, Author=command["user_name"]
+    )
     # expects to be in format: owner/repo1,owner/repo2
     repos = os.environ.get("REPOS", []).split()
 
