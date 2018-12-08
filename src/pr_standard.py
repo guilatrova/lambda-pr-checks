@@ -82,7 +82,7 @@ def handler(event, context):
 
     valid_pr, reason, commits_analyzed = _validate_pr(ghevent["pull_request"])
     status = "success" if valid_pr else "failure"
-    logger.info("Validate PR: " + status)
+    logger.info("Updating PR status: " + status)
 
     gh_status_response = github.update_pr_status(
         status_url, status, "PR standard", reason
@@ -93,10 +93,11 @@ def handler(event, context):
         return _get_failure_response(gh_status_response)
 
     if not valid_pr and len(commits_analyzed) > 0:
-        logger.info("Invalid commits. Writing summary")
+        logger.info("Invalid commits found - Writing summary")
         gh_summary_response = github.write_error_summary(
             ghevent["pull_request"]["comments_url"], commits_analyzed
         )
+        logger.info("Summary written")
 
         if not gh_summary_response.ok:
             return _get_failure_response(gh_summary_response)
