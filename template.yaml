@@ -7,7 +7,7 @@ Description: >
 
 Globals:
     Function:
-        Timeout: 3
+        Timeout: 10
         Runtime: python3.7
 
 
@@ -26,6 +26,21 @@ Resources:
                     Type: Api
                     Properties:
                         Path: /standard
+                        Method: post
+
+    CodeFreezerSlashFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: src/
+            Handler: codefreezer.handler
+            Environment:
+                Variables:
+                    GITHUB_TOKEN: 123456
+            Events:
+                Api:
+                    Type: Api
+                    Properties:
+                        Path: /codefreeze
                         Method: post
 
 # Outputs:

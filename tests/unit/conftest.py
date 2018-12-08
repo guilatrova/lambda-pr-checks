@@ -5,14 +5,19 @@ import pytest
 
 def _read_payload(filename):
     script_dir = os.path.dirname(__file__)
-    file_path = os.path.join(script_dir, f"../payloads/{filename}.json")
+    file_path = os.path.join(script_dir, f"../payloads/{filename}")
     with open(file_path) as data:
         return data.read()
 
 
 @pytest.fixture()
 def incoming_open_pr_payload():
-    return _read_payload("open_pr_event")
+    return _read_payload("open_pr_event.json")
+
+
+@pytest.fixture()
+def incoming_slack_command():
+    return _read_payload("slack_command.txt")
 
 
 @pytest.fixture()
