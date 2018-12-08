@@ -45,6 +45,17 @@ def test_write_error_summary(expected_headers, mocker):
     )
 
 
+def test_get_open_prs(expected_headers, mocker):
+    request = mocker.patch.object(github.requests, "get", return_value=MagicMock())
+
+    github.get_open_prs("guilatrova/examplerepo")
+
+    request.assert_called_once_with(
+        "https://api.github.com/repos/guilatrova/examplerepo/pulls?state=open",
+        headers=expected_headers,
+    )
+
+
 def test_create_summary_content(mocker):
     mocker.patch.dict(os.environ, {"DOCS_STANDARD_LINK": "companystandard.com"})
     commits = [

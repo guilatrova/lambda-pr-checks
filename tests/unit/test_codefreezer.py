@@ -1,3 +1,5 @@
+import os
+
 from src import codefreezer
 
 
@@ -14,6 +16,40 @@ def test_extract_command_process_args(incoming_slack_command):
 
     assert output["text"] == "enable"
     assert output["args"] == ["Jan", "20"]
+
+
+def test_enable_freeze(mocker):
+    repos = "guilatrova/examplerepo"
+    prs = [{"statuses_url": "correct_url"}]
+
+    mocker.patch.dict(os.environ, {"REPOS": repos})
+    open_pr_mock = mocker.patch.object(
+        codefreezer.github, "get_open_prs", return_value=prs
+    )
+    update_pr_mock = mocker.patch.object(
+        codefreezer.github, "update_pr_status", return_value=True
+    )
+
+    codefreezer._freeze({"text": "enable"})
+    open_pr_mock.assert_called_once_with(repos)
+    update_pr_mock.assert_called_once_with("correct_url", "failure", "CodeFreeze")
+
+
+def test_disable_freeze(mocker):
+    repos = "guilatrova/examplerepo"
+    prs = [{"statuses_url": "correct_url"}]
+
+    mocker.patch.dict(os.environ, {"REPOS": repos})
+    open_pr_mock = mocker.patch.object(
+        codefreezer.github, "get_open_prs", return_value=prs
+    )
+    update_pr_mock = mocker.patch.object(
+        codefreezer.github, "update_pr_status", return_value=True
+    )
+
+    codefreezer._freeze({"text": "disable"})
+    open_pr_mock.assert_called_once_with(repos)
+    update_pr_mock.assert_called_once_with("correct_url", "success", "CodeFreeze")
 
 
 def test_handler_calls_correct_functions(event_creator, incoming_slack_command, mocker):

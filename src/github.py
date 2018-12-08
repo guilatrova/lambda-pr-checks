@@ -45,11 +45,19 @@ def get_commits(url):
     return response.json()
 
 
-def update_pr_status(url, state, check_title, check_description):
+def update_pr_status(url, state, check_title, check_description=""):
     headers = _get_gh_headers()
     body = {"context": check_title, "description": check_description, "state": state}
 
     return requests.post(url, json=body, headers=headers)
+
+
+def get_open_prs(repo):
+    url = f"https://api.github.com/repos/{repo}/pulls?state=open"
+    headers = _get_gh_headers()
+
+    response = requests.get(url, headers=headers)
+    return response.json
 
 
 def write_error_summary(url, analyzed):

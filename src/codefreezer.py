@@ -1,4 +1,7 @@
+import os
 from urllib.parse import parse_qs
+
+from src import github
 
 OK_RESPONSE = {"statusCode": 200, "headers": {"Content-Type": "text/plain"}}
 
@@ -19,7 +22,16 @@ def _extract_command(raw):
 
 
 def _freeze(command):
-    pass
+    pr_state = "failure" if command["text"] == "enable" else "success"
+
+    # expects to be in format: owner/repo1,owner/repo2
+    repos = os.environ.get("REPOS", []).split()
+
+    for repo in repos:
+        prs = github.get_open_prs(repo)
+
+        for pr in prs:
+            github.update_pr_status(pr["statuses_url"], pr_state, "CodeFreeze")
 
 
 def handler(event, context):
