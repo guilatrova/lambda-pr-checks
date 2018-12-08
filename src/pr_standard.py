@@ -33,23 +33,38 @@ def _validate_title(title):
 
 def _validate_commits(pull_request):
     commits = github.get_commits(pull_request["commits_url"])
+    result = True
+    analyzed = []
 
-    for commit_parent in commits:
-        message = commit_parent["commit"]["message"]
-        if not message.lower().startswith("merge") and not _validate_title(message):
-            return False
+    for commit_wrapper in commits:
+        commit_obj = commit_wrapper["commit"]
+        commit = {
+            "sha": commit_wrapper["sha"],
+            "message": commit_obj["message"],
+            "standard": True,
+        }
 
-    return True
+        if not commit["message"].lower().startswith("merge") and not _validate_title(
+            commit["message"]
+        ):
+            result = False
+            commit["standard"] = False
+
+        analyzed.append(commit)
+
+    return result, analyzed
 
 
 def _validate_pr(pull_request):
     if _validate_title(pull_request["title"]):
-        if _validate_commits(pull_request):
-            return True, SUCCESS_MESSAGE
+        valid_commits, commits_analyzed = _validate_commits(pull_request)
+
+        if valid_commits:
+            return True, SUCCESS_MESSAGE, commits_analyzed
         else:
-            return False, PR_COMMITS_FAILURE_MESSAGE
+            return False, PR_COMMITS_FAILURE_MESSAGE, commits_analyzed
     else:
-        return False, PR_TITLE_FAILURE_MESSAGE
+        return False, PR_TITLE_FAILURE_MESSAGE, []
 
 
 def _get_failure_response(gh_response):
@@ -61,12 +76,22 @@ def handler(event, context):
     ghevent = json.loads(event.get("body"))
     status_url = ghevent["pull_request"]["statuses_url"]
 
-    valid_pr, reason = _validate_pr(ghevent["pull_request"])
+    valid_pr, reason, commits_analyzed = _validate_pr(ghevent["pull_request"])
     status = "success" if valid_pr else "failure"
 
-    gh_response = github.update_pr_status(status_url, status, "PR standard", reason)
+    gh_status_response = github.update_pr_status(
+        status_url, status, "PR standard", reason
+    )
 
-    if gh_response.ok:
-        return OK_RESPONSE
+    if not gh_status_response.ok:
+        return _get_failure_response(gh_status_response)
 
-    return _get_failure_response(gh_response)
+    if not valid_pr and len(commits_analyzed) > 0:
+        gh_summary_response = github.write_error_summary(
+            ghevent["pull_request"]["comments_url"], commits_analyzed
+        )
+
+        if not gh_summary_response.ok:
+            return _get_failure_response(gh_summary_response)
+
+    return OK_RESPONSE

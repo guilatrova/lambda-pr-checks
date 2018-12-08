@@ -1,8 +1,17 @@
 import json
-import os
 from unittest.mock import MagicMock
 
-from src import github, pr_standard
+from src import pr_standard
+
+
+def check_commits(result, valid, *args):
+    actual_result, commits = result
+
+    assert actual_result == valid
+    assert len(commits) == len(args)
+
+    for i in range(len(args)):
+        assert commits[i]["standard"] == args[i]
 
 
 def test_invalid_pr_title():
@@ -22,13 +31,15 @@ def test_valid_title_with_ticket_ids():
 
 def test_valid_commits(valid_commits, mocker):
     mocker.patch.object(pr_standard.github, "get_commits", return_value=valid_commits)
-    assert pr_standard._validate_commits({"commits_url": ""}) is True
+    result = pr_standard._validate_commits({"commits_url": ""})
+    check_commits(result, True, True, True)
 
 
 def test_valid_commits_git_merge(valid_commits, mocker):
     valid_commits.append({"sha": "789", "commit": {"message": "Merge pull request"}})
     mocker.patch.object(pr_standard.github, "get_commits", return_value=valid_commits)
-    assert pr_standard._validate_commits({"commits_url": ""}) is True
+    result = pr_standard._validate_commits({"commits_url": ""})
+    check_commits(result, True, True, True, True)
 
 
 def test_invalid_commits(valid_commits, mocker):
@@ -39,7 +50,8 @@ def test_invalid_commits(valid_commits, mocker):
             "commit": {"message": "Did some work with an invalid commit message"},
         }
     )
-    assert pr_standard._validate_commits({"commits_url": ""}) is False
+    result = pr_standard._validate_commits({"commits_url": ""})
+    check_commits(result, False, True, True, False)
 
 
 def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
@@ -49,7 +61,10 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
         pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
     )
     mocker.patch.object(pr_standard, "_validate_title", return_value=True)
-    mocker.patch.object(pr_standard, "_validate_commits", return_value=True)
+    mocker.patch.object(pr_standard, "_validate_commits", return_value=(True, []))
+    error_summary_mock = mocker.patch.object(
+        pr_standard.github, "write_error_summary", return_value=MagicMock()
+    )
 
     response = pr_standard.handler(event, "")
 
@@ -61,15 +76,21 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
     )
 
     assert response == pr_standard.OK_RESPONSE
+    assert error_summary_mock.called is False
 
 
-def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mocker):
+def test_lambda_handler_invalid_pr_title(
+    event_creator, incoming_open_pr_payload, mocker
+):
     event = event_creator(incoming_open_pr_payload)
     github_payload = json.loads(event["body"])
     update_pr_status_mock = mocker.patch.object(
         pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
     )
     mocker.patch.object(pr_standard, "_validate_title", return_value=False)
+    error_summary_mock = mocker.patch.object(
+        pr_standard.github, "write_error_summary", return_value=MagicMock()
+    )
 
     response = pr_standard.handler(event, "")
 
@@ -81,16 +102,52 @@ def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mock
     )
 
     assert response == pr_standard.OK_RESPONSE
+    assert error_summary_mock.called is False
 
 
-def test_lambda_handler_failing_gh_hook(
+def test_lambda_handler_invalid_commits(
+    event_creator, incoming_open_pr_payload, mocker
+):
+    event = event_creator(incoming_open_pr_payload)
+    github_payload = json.loads(event["body"])
+    commits_analyzed = [{}, {}]
+
+    update_pr_status_mock = mocker.patch.object(
+        pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
+    )
+    mocker.patch.object(
+        pr_standard,
+        "_validate_pr",
+        return_value=(False, pr_standard.PR_COMMITS_FAILURE_MESSAGE, commits_analyzed),
+    )
+    error_summary_mock = mocker.patch.object(
+        pr_standard.github, "write_error_summary", return_value=MagicMock()
+    )
+
+    response = pr_standard.handler(event, "")
+
+    update_pr_status_mock.assert_called_once_with(
+        github_payload["pull_request"]["statuses_url"],
+        "failure",
+        "PR standard",
+        pr_standard.PR_COMMITS_FAILURE_MESSAGE,
+    )
+
+    error_summary_mock.assert_called_once_with(
+        github_payload["pull_request"]["comments_url"], commits_analyzed
+    )
+
+    assert response == pr_standard.OK_RESPONSE
+
+
+def test_lambda_handler_failing_gh_status_hook(
     event_creator, incoming_open_pr_payload, mocker
 ):
     event = event_creator(incoming_open_pr_payload)
     gh_error = json.dumps({"text": "A crazy error just happened"})
 
     mocker.patch.object(pr_standard, "_validate_title", return_value=True)
-    mocker.patch.object(pr_standard, "_validate_commits", return_value=True)
+    mocker.patch.object(pr_standard, "_validate_commits", return_value=(True, []))
     mocker.patch.object(
         pr_standard.github,
         "update_pr_status",
@@ -102,4 +159,4 @@ def test_lambda_handler_failing_gh_hook(
     assert response["statusCode"] == pr_standard.FAIL_RESPONSE["statusCode"]
     assert response["headers"] == pr_standard.FAIL_RESPONSE["headers"]
     assert "body" in response
-    assert len(response["body"]) > 0
+    assert response["body"] == gh_error
