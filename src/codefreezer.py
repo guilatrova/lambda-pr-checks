@@ -101,7 +101,7 @@ def slack_handler(event, context):
     slack_command = _extract_command(event.get("body"))
     logger.info("Command text: " + slack_command["text"])
 
-    if slack_command["text"] == "enable":
+    if slack_command["text"] in ["enable", "disable"]:
         freeze_response = _freeze(slack_command)
         return {**OK_RESPONSE, "body": json.dumps(freeze_response)}
 
