@@ -1,8 +1,16 @@
+import logging
+
 import boto3
 
 TABLE_NAME = "CodeFreezeConfig"
 FREEZE_CONFIG = "FreezeStatus"
 DEFAULT_STATUS = {"ConfigName": FREEZE_CONFIG, "Status": "disabled", "Author": ""}
+
+logger = logging.getLogger()
+if logger.handlers:
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
+logging.basicConfig(level=logging.INFO)
 
 
 def _get_table():
@@ -12,6 +20,7 @@ def _get_table():
 
 
 def write_config(key, **kwargs):
+    logger.info("Writing key: " + key)
     table = _get_table()
     table.put_item(Item={"ConfigName": key, **kwargs})
 

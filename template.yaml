@@ -33,6 +33,7 @@ Resources:
         Properties:
             CodeUri: src/
             Handler: codefreezer.slack_handler
+            Policies: AmazonDynamoDBFullAccess
             Environment:
                 Variables:
                     REPOS: guilatrova/Github-Lambda-Status-Checks
@@ -49,12 +50,24 @@ Resources:
         Properties:
             CodeUri: src/
             Handler: codefreezer.gh_handler
+            Policies: AmazonDynamoDBReadOnlyAccess
             Events:
                 Api:
                     Type: Api
                     Properties:
                         Path: /codefreeze-status
                         Method: post
+
+    ConfigTable:
+        Type: AWS::Serverless::SimpleTable
+        Properties:
+            TableName: "CodeFreezeConfig"
+            PrimaryKey:
+                Name: ConfigName
+                Type: String
+            ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
 
 # Outputs:
 
