@@ -11,8 +11,8 @@ def test_create_slack_error_message():
     assert result["statusCode"] == error_handler.SLACK_FAIL_RESPONSE["statusCode"]
     assert result["headers"] == error_handler.SLACK_FAIL_RESPONSE["headers"]
     assert "body" in result
-    assert result["body"]["response_type"] == "ephemeral"
-    assert result["body"]["text"] == text
+    assert "ephemeral" in result["body"]
+    assert text in result["body"]
 
 
 def test_get_github_error_message():
@@ -30,6 +30,7 @@ def test_get_slack_error_message():
     errors = {"key1": "desc1", "key2": "desc2"}
 
     result = error_handler.get_error_response("slack", errors)
-    text = result["body"]["text"]
+    text = result["body"]
 
-    assert text == "\n*key1:* desc1\n*key2:* desc2"
+    # json formats \n to \\n
+    assert "*key1:* desc1\\n*key2:* desc2" in text
