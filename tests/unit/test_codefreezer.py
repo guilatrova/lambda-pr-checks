@@ -50,11 +50,22 @@ def test_get_disabled_status(mocker):
     assert_status_response(result, "disabled", "fire", "author")
 
 
+def test_has_authorization(mocker):
+    mocker.patch.dict(os.environ, {"AUTHORIZED": "name1,name2"})
+    assert codefreezer._has_authorization("name1") is True
+
+
+def test_unauthorization(mocker):
+    mocker.patch.dict(os.environ, {"AUTHORIZED": "name1,name2"})
+    assert codefreezer._has_authorization("name3") is False
+
+
 def test_enable_freeze(mocker):
     repos = "guilatrova/examplerepo"
     prs = [{"statuses_url": "correct_url"}]
 
     mocker.patch.dict(os.environ, {"REPOS": repos})
+    mocker.patch.object(codefreezer, "_has_authorization", return_value=True)
     open_pr_mock = mocker.patch.object(
         codefreezer.github, "get_open_prs", return_value=prs
     )
@@ -80,6 +91,7 @@ def test_disable_freeze(mocker):
     prs = [{"statuses_url": "correct_url"}]
 
     mocker.patch.dict(os.environ, {"REPOS": repos})
+    mocker.patch.object(codefreezer, "_has_authorization", return_value=True)
     open_pr_mock = mocker.patch.object(
         codefreezer.github, "get_open_prs", return_value=prs
     )

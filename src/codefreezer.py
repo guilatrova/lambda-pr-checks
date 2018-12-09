@@ -13,6 +13,9 @@ OK_RESPONSE = {"statusCode": 200, "headers": {"Content-Type": "application/json"
 CODE_FREEZE_ENABLED_MESSAGE = (
     "A merge is currently blocked because a Code Freeze is enabled"
 )
+UNAUTHORIZED_MESSAGE = (
+    "Sorry, you're unable to enable/disable codefreeze due authorization"
+)
 
 
 def _extract_command(raw):
@@ -28,6 +31,12 @@ def _extract_command(raw):
     result["args"] = text[1:]
 
     return result
+
+
+def _has_authorization(username):
+    # Expected format: username1,username2,username3
+    authorized = os.environ.get("AUTHORIZED", "").split(",")
+    return username in authorized
 
 
 def _status():
@@ -47,6 +56,9 @@ def _status():
 
 
 def _freeze(command):
+    if not _has_authorization(command["user_name"]):
+        return {"response_type": "ephemeral", "text": UNAUTHORIZED_MESSAGE}
+
     if command["text"] == "enable":
         pr_state = "failure"
         status = "enabled"
@@ -60,7 +72,7 @@ def _freeze(command):
         dynamodb.FREEZE_CONFIG, Status=status, Author=command["user_name"]
     )
     # expects to be in format: owner/repo1,owner/repo2
-    repos = os.environ.get("REPOS", []).split()
+    repos = os.environ.get("REPOS", []).split(",")
 
     for repo in repos:
         prs = github.get_open_prs(repo)
