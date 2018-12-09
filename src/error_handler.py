@@ -1,5 +1,6 @@
 import json
 import logging
+import sys
 import traceback
 
 try:
@@ -21,7 +22,8 @@ SLACK_FAIL_RESPONSE = {
 
 
 def create_slack_error_message(text):
-    return {**SLACK_FAIL_RESPONSE, "body": {"response_type": "ephemeral", "text": text}}
+    body = json.dumps({"response_type": "ephemeral", "text": text})
+    return {**SLACK_FAIL_RESPONSE, "body": body}
 
 
 def get_error_response(integration, details):
@@ -42,6 +44,7 @@ def get_error_response(integration, details):
 def wrapper_for(integration):
     def _outer_wrapper(func):
         def _inner_wrapper(*args, **kwargs):
+            logging.info("Error handler attached")
             try:
                 return func(*args, **kwargs)
 
@@ -58,11 +61,11 @@ def wrapper_for(integration):
                 logging.error("GitHubException Details: " + str(body))
                 return get_error_response(integration, body)
 
-            except Exception as ex:
+            except:
                 logging.error("Exception catch by wrapper")
                 body = {
                     "type": "unknown",
-                    "exception": repr(ex),
+                    "exception": sys.exc_info()[0],
                     "stacktrace": traceback.format_exc(),
                 }
 
