@@ -12,11 +12,7 @@ except ModuleNotFoundError:  # For tests
     from . import dynamodb
     from . import error_handler
 
-OK_RESPONSE = {
-    "statusCode": 200,
-    "headers": {"Content-Type": "application/json"},
-    "body": json.dumps("ok"),
-}
+OK_RESPONSE = {"statusCode": 200, "headers": {"Content-Type": "application/json"}}
 CODE_FREEZE_ENABLED_MESSAGE = (
     "A merge is currently blocked because a Code Freeze is enabled"
 )
@@ -97,6 +93,8 @@ def _freeze(command):
                 pr["statuses_url"], pr_state, "CodeFreeze", description
             )
 
+    return {"text": f"CodeFreeze is *{status}*"}
+
 
 @error_handler.wrapper_for("slack")
 def slack_handler(event, context):
@@ -104,13 +102,14 @@ def slack_handler(event, context):
     logger.info("Command text: " + slack_command["text"])
 
     if slack_command["text"] == "enable":
-        _freeze(slack_command)
+        freeze_response = _freeze(slack_command)
+        return {**OK_RESPONSE, "body": json.dumps(freeze_response)}
 
     if slack_command["text"] == "status":
         status_response = _status()
         return {**OK_RESPONSE, "body": json.dumps(status_response)}
 
-    return {**OK_RESPONSE, "body": json.dumps("ok")}
+    return {**OK_RESPONSE, "body": "Unknown command"}
 
 
 @error_handler.wrapper_for("github")
