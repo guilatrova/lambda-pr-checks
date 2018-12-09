@@ -1,3 +1,4 @@
+import json
 import os
 from urllib.parse import parse_qs
 
@@ -8,7 +9,7 @@ except ModuleNotFoundError:  # For tests
     from src import github
     from src import dynamodb
 
-OK_RESPONSE = {"statusCode": 200, "headers": {"Content-Type": "text/plain"}}
+OK_RESPONSE = {"statusCode": 200, "headers": {"Content-Type": "application/json"}}
 CODE_FREEZE_ENABLED_MESSAGE = (
     "A merge is currently blocked because a Code Freeze is enabled"
 )
@@ -75,5 +76,8 @@ def handler(event, context):
 
     if slack_command["text"] == "enable":
         _freeze(slack_command)
+    if slack_command["text"] == "status":
+        status_response = _status()
+        return {**OK_RESPONSE, "body": json.dumps(status_response)}
 
-    return {**OK_RESPONSE, "body": "ok"}
+    return {**OK_RESPONSE, "body": json.dumps("ok")}
