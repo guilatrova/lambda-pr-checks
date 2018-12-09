@@ -2,6 +2,7 @@ import boto3
 
 TABLE_NAME = "CodeFreezeConfig"
 FREEZE_CONFIG = "FreezeStatus"
+DEFAULT_STATUS = {"ConfigName": FREEZE_CONFIG, "Status": "disabled", "Author": ""}
 
 
 def _get_table():
@@ -18,4 +19,8 @@ def write_config(key, **kwargs):
 def get_code_freeze_config():
     table = _get_table()
     response = table.get_item(Key={"ConfigName": FREEZE_CONFIG})
-    return response["Item"]
+
+    if "Item" in response:
+        return response["Item"]
+
+    return DEFAULT_STATUS

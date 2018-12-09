@@ -3,6 +3,14 @@ import os
 from src import codefreezer
 
 
+def assert_status_response(response, status, emoji, author):
+    assert "text" in response
+    assert "attachments" in response
+    assert status in response["text"]
+    assert emoji in response["text"]
+    assert author in response["attachments"][0]["text"]
+
+
 def test_extract_command(incoming_slack_command):
     output = codefreezer._extract_command(incoming_slack_command)
 
@@ -27,10 +35,7 @@ def test_get_enabled_status(mocker):
 
     result = codefreezer._status()
 
-    assert "text" in result
-    assert "attachments" in result
-    assert "enabled" in result["text"]
-    assert "author" in result["attachments"][0]["text"]
+    assert_status_response(result, "enabled", "snowflake", "author")
 
 
 def test_get_disabled_status(mocker):
@@ -42,10 +47,7 @@ def test_get_disabled_status(mocker):
 
     result = codefreezer._status()
 
-    assert "text" in result
-    assert "attachments" in result
-    assert "disabled" in result["text"]
-    assert "author" in result["attachments"][0]["text"]
+    assert_status_response(result, "disabled", "fire", "author")
 
 
 def test_enable_freeze(mocker):
