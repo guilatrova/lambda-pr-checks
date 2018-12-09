@@ -9,6 +9,9 @@ Globals:
     Function:
         Timeout: 10
         Runtime: python3.7
+        Environment:
+            Variables:
+                GITHUB_TOKEN: 123456
 
 
 Resources:
@@ -18,9 +21,6 @@ Resources:
         Properties:
             CodeUri: src/
             Handler: pr_standard.handler
-            Environment:
-                Variables:
-                    GITHUB_TOKEN: 123456
             Events:
                 HelloWorld:
                     Type: Api
@@ -32,15 +32,28 @@ Resources:
         Type: AWS::Serverless::Function
         Properties:
             CodeUri: src/
-            Handler: codefreezer.handler
+            Handler: codefreezer.slack_handler
             Environment:
                 Variables:
-                    GITHUB_TOKEN: 123456
+                    REPOS: guilatrova/Github-Lambda-Status-Checks
+                    AUTHORIZED: Guilherme
             Events:
                 Api:
                     Type: Api
                     Properties:
                         Path: /codefreeze
+                        Method: post
+
+    PullRequestCodeFreezeCheckFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: src/
+            Handler: codefreezer.gh_handler
+            Events:
+                Api:
+                    Type: Api
+                    Properties:
+                        Path: /codefreeze-status
                         Method: post
 
 # Outputs:
