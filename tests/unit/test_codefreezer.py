@@ -115,7 +115,7 @@ def test_handler_calls_freeze(event_creator, incoming_slack_command, mocker):
     event = event_creator(incoming_slack_command)
 
     command = codefreezer._extract_command(incoming_slack_command)
-    response = codefreezer.handler(event, "")
+    response = codefreezer.slack_handler(event, "")
 
     freeze_mock.assert_called_once_with(command)
     assert response["statusCode"] == 200
@@ -127,7 +127,7 @@ def test_handler_calls_status(event_creator, incoming_slack_command, mocker):
     )
     event = event_creator(incoming_slack_command.replace("enable", "status"))
 
-    response = codefreezer.handler(event, "")
+    response = codefreezer.slack_handler(event, "")
 
     status_mock.assert_called_once()
     assert response["statusCode"] == 200
