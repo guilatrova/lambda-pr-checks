@@ -39,9 +39,9 @@ def get_error_response(integration, details):
     return create_slack_error_message(text)
 
 
-def error_handler(integration):
-    def outer_wrapper(func):
-        def wrapper(*args, **kwargs):
+def wrapper_for(integration):
+    def _outer_wrapper(func):
+        def _inner_wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
 
@@ -69,6 +69,6 @@ def error_handler(integration):
                 logging.error("Exception Details: " + str(body))
                 return get_error_response(integration, body)
 
-        return wrapper
+        return _inner_wrapper
 
-    return outer_wrapper
+    return _outer_wrapper

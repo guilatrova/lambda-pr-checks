@@ -5,19 +5,16 @@ from urllib.parse import parse_qs
 try:
     import github
     import dynamodb
+    import error_handler
 except ModuleNotFoundError:  # For tests
-    from src import github
-    from src import dynamodb
+    from . import github
+    from . import dynamodb
+    from . import error_handler
 
 OK_RESPONSE = {
     "statusCode": 200,
     "headers": {"Content-Type": "application/json"},
     "body": json.dumps("ok"),
-}
-FAIL_RESPONSE = {
-    "statusCode": 500,
-    "headers": {"Content-Type": "application/json"},
-    "body": "",
 }
 CODE_FREEZE_ENABLED_MESSAGE = (
     "A merge is currently blocked because a Code Freeze is enabled"
@@ -92,6 +89,7 @@ def _freeze(command):
             )
 
 
+@error_handler.wrapper_for("slack")
 def slack_handler(event, context):
     slack_command = _extract_command(event.get("body"))
 
@@ -105,6 +103,7 @@ def slack_handler(event, context):
     return {**OK_RESPONSE, "body": json.dumps("ok")}
 
 
+@error_handler.wrapper_for("github")
 def gh_handler(event, context):
     ghevent = json.loads(event.get("body"))
     status_url = ghevent["pull_request"]["statuses_url"]
@@ -115,9 +114,6 @@ def gh_handler(event, context):
     if status == "enabled":
         message = CODE_FREEZE_ENABLED_MESSAGE
 
-    gh_response = github.update_pr_status(status_url, "CodeFreeze", message)
+    github.update_pr_status(status_url, "CodeFreeze", message)
 
-    if gh_response.ok:
-        return OK_RESPONSE
-
-    return {**FAIL_RESPONSE, "body": gh_response.text}
+    return OK_RESPONSE

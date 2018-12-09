@@ -1,7 +1,7 @@
 import json
 from unittest.mock import MagicMock
 
-from src import pr_standard
+from src import error_handler, pr_standard
 
 
 def check_commits(result, valid, *args):
@@ -140,23 +140,21 @@ def test_lambda_handler_invalid_commits(
     assert response == pr_standard.OK_RESPONSE
 
 
-def test_lambda_handler_failing_gh_status_hook(
+def test_lambda_handler_handles_exception(
     event_creator, incoming_open_pr_payload, mocker
 ):
     event = event_creator(incoming_open_pr_payload)
-    gh_error = json.dumps({"text": "A crazy error just happened"})
 
     mocker.patch.object(pr_standard, "_validate_title", return_value=True)
     mocker.patch.object(pr_standard, "_validate_commits", return_value=(True, []))
     mocker.patch.object(
         pr_standard.github,
         "update_pr_status",
-        return_value=MagicMock(ok=False, text=gh_error),
+        side_effect=pr_standard.github.GitHubException("www.site.com", "text"),
     )
 
     response = pr_standard.handler(event, "")
 
-    assert response["statusCode"] == pr_standard.FAIL_RESPONSE["statusCode"]
-    assert response["headers"] == pr_standard.FAIL_RESPONSE["headers"]
+    assert response["statusCode"] == error_handler.GH_FAIL_RESPONSE["statusCode"]
+    assert response["headers"] == error_handler.GH_FAIL_RESPONSE["headers"]
     assert "body" in response
-    assert response["body"] == gh_error

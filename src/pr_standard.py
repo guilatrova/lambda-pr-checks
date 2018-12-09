@@ -4,8 +4,10 @@ import re
 
 try:
     import github
-except ModuleNotFoundError:
-    from . import github  # For tests
+    import error_handler
+except ModuleNotFoundError:  # For tests
+    from . import github
+    from . import error_handler
 
 logger = logging.getLogger()
 if logger.handlers:
@@ -21,12 +23,6 @@ OK_RESPONSE = {
     "statusCode": 200,
     "headers": {"Content-Type": "application/json"},
     "body": json.dumps("ok"),
-}
-
-FAIL_RESPONSE = {
-    "statusCode": 500,
-    "headers": {"Content-Type": "application/json"},
-    "body": "",
 }
 
 
@@ -70,11 +66,7 @@ def _validate_pr(pull_request):
         return False, PR_TITLE_FAILURE_MESSAGE, []
 
 
-def _get_failure_response(gh_response):
-    logger.error("Error from gh:" + str(gh_response))
-    return {**FAIL_RESPONSE, "body": gh_response.text}
-
-
+@error_handler.wrapper_for("github")
 def handler(event, context):
     logger.info("Handler start")
     ghevent = json.loads(event.get("body"))
@@ -84,22 +76,14 @@ def handler(event, context):
     status = "success" if valid_pr else "failure"
     logger.info("Updating PR status: " + status)
 
-    gh_status_response = github.update_pr_status(
-        status_url, status, "PR standard", reason
-    )
+    github.update_pr_status(status_url, status, "PR standard", reason)
     logger.info("PR status updated")
-
-    if not gh_status_response.ok:
-        return _get_failure_response(gh_status_response)
 
     if not valid_pr and len(commits_analyzed) > 0:
         logger.info("Invalid commits found - Writing summary")
-        gh_summary_response = github.write_error_summary(
+        github.write_error_summary(
             ghevent["pull_request"]["comments_url"], commits_analyzed
         )
         logger.info("Summary written")
-
-        if not gh_summary_response.ok:
-            return _get_failure_response(gh_summary_response)
 
     return OK_RESPONSE
