@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from urllib.parse import parse_qs
 
@@ -23,6 +24,12 @@ UNAUTHORIZED_MESSAGE = (
     "Sorry, you're unable to enable/disable codefreeze due authorization"
 )
 
+logger = logging.getLogger()
+if logger.handlers:
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
+logging.basicConfig(level=logging.INFO)
+
 
 def _extract_command(raw):
     result = {}
@@ -40,6 +47,7 @@ def _extract_command(raw):
 
 
 def _has_authorization(username):
+    logger.info("Checking authorization for " + username)
     # Expected format: username1,username2,username3
     authorized = os.environ.get("AUTHORIZED", "").split(",")
     return username in authorized
@@ -74,6 +82,7 @@ def _freeze(command):
         status = "disabled"
         description = ""
 
+    logger.info("Writing status config to: " + status)
     dynamodb.write_config(
         dynamodb.FREEZE_CONFIG, Status=status, Author=command["user_name"]
     )
@@ -92,6 +101,7 @@ def _freeze(command):
 @error_handler.wrapper_for("slack")
 def slack_handler(event, context):
     slack_command = _extract_command(event.get("body"))
+    logger.info("Command text: " + slack_command["text"])
 
     if slack_command["text"] == "enable":
         _freeze(slack_command)
