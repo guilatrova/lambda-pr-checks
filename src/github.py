@@ -15,6 +15,13 @@ Read the [docs](#DOCS#) for more details
 """
 
 
+class GitHubException(Exception):
+    def __init__(self, url, response_text):
+        super().__init__()
+        self.url = url
+        self.response_text = response_text
+
+
 def _get_gh_headers():
     token = os.environ["GITHUB_TOKEN"]
     return {
