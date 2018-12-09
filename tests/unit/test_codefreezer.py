@@ -18,6 +18,36 @@ def test_extract_command_process_args(incoming_slack_command):
     assert output["args"] == ["Jan", "20"]
 
 
+def test_get_enabled_status(mocker):
+    mocker.patch.object(
+        codefreezer.dynamodb,
+        "get_code_freeze_config",
+        return_value={"Status": "enabled", "Author": "author"},
+    )
+
+    result = codefreezer._status()
+
+    assert "text" in result
+    assert "attachments" in result
+    assert "enabled" in result["text"]
+    assert "author" in result["attachments"][0]["text"]
+
+
+def test_get_disabled_status(mocker):
+    mocker.patch.object(
+        codefreezer.dynamodb,
+        "get_code_freeze_config",
+        return_value={"Status": "disabled", "Author": "author"},
+    )
+
+    result = codefreezer._status()
+
+    assert "text" in result
+    assert "attachments" in result
+    assert "disabled" in result["text"]
+    assert "author" in result["attachments"][0]["text"]
+
+
 def test_enable_freeze(mocker):
     repos = "guilatrova/examplerepo"
     prs = [{"statuses_url": "correct_url"}]
@@ -66,7 +96,7 @@ def test_disable_freeze(mocker):
     )
 
 
-def test_handler_calls_correct_functions(event_creator, incoming_slack_command, mocker):
+def test_handler_calls_freeze(event_creator, incoming_slack_command, mocker):
     freeze_mock = mocker.patch.object(codefreezer, "_freeze", return_value=None)
     event = event_creator(incoming_slack_command)
 
@@ -75,3 +105,7 @@ def test_handler_calls_correct_functions(event_creator, incoming_slack_command, 
 
     freeze_mock.assert_called_once_with(command)
     assert response["statusCode"] == 200
+
+
+def test_handler_calls_status(event_creator, incoming_slack_command, mocker):
+    pass

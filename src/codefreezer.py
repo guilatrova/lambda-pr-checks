@@ -29,6 +29,22 @@ def _extract_command(raw):
     return result
 
 
+def _status():
+    config = dynamodb.get_code_freeze_config()
+    author = config["Author"]
+
+    def _create_response(status, emoji, author):
+        return {
+            "text": f"Code Freeze is currently *{status}* :{emoji}:",
+            "attachments": [{"text": f"Author: {author}"}],
+        }
+
+    if config["Status"] == "enabled":
+        return _create_response("enabled", "snowflake", author)
+    else:
+        return _create_response("disabled", "fire", author)
+
+
 def _freeze(command):
     if command["text"] == "enable":
         pr_state = "failure"
