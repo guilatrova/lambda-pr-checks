@@ -1,0 +1,13 @@
+-------------
+Diff Coverage
+Diff: origin/dev...HEAD, staged and unstaged changes
+-------------
+example/worker/feedback/models.py (60.0%): Missing lines 24-25
+example/schemas/subjects.py (25.0%): Missing lines 138,141,228
+assessments/workflow/api.py (25.0%): Missing lines 28-29,76
+assessments/utils/handler.py (11.1%): Missing lines 42-44,46-51,58,60,73-76,78-81,83-87,89-90,92,94-95,97,111,123,145-146,148,156,161,163,175,192,195,213,228,245,264,266,270,282,284-286,289,303,305,307,309,311,314,316,324,337,362,366,371
+-------------
+Total:   85 lines
+Missing: 72 lines
+Coverage: 15%
+-------------
