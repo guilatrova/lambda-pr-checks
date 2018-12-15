@@ -19,3 +19,13 @@ def test_read_coverage_file(mocker, covdiff_content):
     assert report["total"] == "85"
     assert report["missing"] == "72"
     assert report["coverage"] == "15%"
+
+
+def test_read_coverage_empty_file(mocker, covdiff_empty_content):
+    mocker.patch.object(
+        quality_summary.s3, "get_coverage_file", return_value=covdiff_empty_content
+    )
+
+    report = quality_summary._read_coverage_file("")
+
+    assert report is False

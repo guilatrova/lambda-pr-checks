@@ -16,6 +16,11 @@ def covdiff_content():
 
 
 @pytest.fixture()
+def covdiff_empty_content():
+    return _read_payload("covdiff_empty.txt")
+
+
+@pytest.fixture()
 def incoming_open_pr_payload():
     return _read_payload("open_pr_event.json")
 
