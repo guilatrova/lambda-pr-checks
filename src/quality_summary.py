@@ -9,11 +9,20 @@ except ModuleNotFoundError:  # For tests
 
 def _read_coverage_file(hash):
     content = s3.get_coverage_file(hash)
-    if content:
-        matches = re.findall(r"(.*) \((.*)\)(.*)", content)
-        return matches
+    report = {}
 
-    return []
+    if content:
+        report["target_branch"] = re.search(r"Diff: (.*)\.\.\.", content).group(1)
+        report["total"] = re.search(r"Total: (.*) lines", content).group(1).strip()
+        report["missing"] = re.search(r"Missing: (.*) lines", content).group(1).strip()
+        report["coverage"] = re.search(r"Coverage: (.*)", content).group(1).strip()
+
+        matches = re.findall(r"(.*) \((.*)\)(.*)", content)
+        report["files"] = matches
+
+        return report
+
+    return False
 
 
 def handler(event, context):
