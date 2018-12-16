@@ -70,7 +70,7 @@ def test_read_quality_file(mocker, qualitydiff_content):
     assert report["quality"] == "99%"
 
 
-def test_read_coverage_empty_file(mocker, qualitydiff_empty_content):
+def test_read_quality_empty_file(mocker, qualitydiff_empty_content):
     mocker.patch.object(
         quality_summary.s3, "get_quality_file", return_value=qualitydiff_empty_content
     )
