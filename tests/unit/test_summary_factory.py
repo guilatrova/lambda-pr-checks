@@ -67,3 +67,13 @@ def test_create_quality_summary(mocker, qualitydiff_content):
     # Content
     assert "\n...ple/workers/feedback/models.py  80.0% " in result
     assert "\nexample/schemas/subjects.py        83.3% " in result
+
+
+def test_create_empty_coverage_summary():
+    result = summary_factory.create_coverage_summary(False, "footer_message")
+    assert result == ""
+
+
+def test_create_empty_quality_summary():
+    result = summary_factory.create_quality_summary(False, "footer_message")
+    assert result == ""

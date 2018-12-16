@@ -75,36 +75,37 @@ def _create_summary_report(template, report, resume, footer):
 
 
 def create_coverage_summary(report, footer):
-    # Resume
-    covered = "+ Covered lines"
-    covered_value = report["total"].rjust(25).ljust(26)
+    if report:
+        covered = "+ Covered lines"
+        covered_value = report["total"].rjust(25).ljust(26)
 
-    missing = "- Missing lines"
-    missing_value = report["missing"].rjust(25).ljust(26)
+        missing = "- Missing lines"
+        missing_value = report["missing"].rjust(25).ljust(26)
 
-    coverage = "+ Coverage"
-    coverage_value = report["coverage"].rjust(30).ljust(31)
-    resume = f"{covered}{covered_value}\n{missing}{missing_value}\n{coverage}{coverage_value}"
+        coverage = "+ Coverage"
+        coverage_value = report["coverage"].rjust(30).ljust(31)
+        resume = f"{covered}{covered_value}\n{missing}{missing_value}\n{coverage}{coverage_value}"
 
-    return _create_summary_report(COVERAGE_REPORT, report, resume, footer)
+        return _create_summary_report(COVERAGE_REPORT, report, resume, footer)
+
+    return ""
 
 
 def create_quality_summary(report, footer):
-    # Resume
-    total = "+ Total lines"
-    total_value = report["total"].rjust(27).ljust(28)
+    if report:
+        total = "+ Total lines"
+        total_value = report["total"].rjust(27).ljust(28)
 
-    violation = "- Violation lines"
-    violation_value = report["violations"].rjust(23).ljust(24)
+        violation = "- Violation lines"
+        violation_value = report["violations"].rjust(23).ljust(24)
 
-    quality = "+ Quality"
-    quality_value = report["quality"].rjust(31).ljust(32)
-    resume = (
-        f"{total}{total_value}\n{violation}{violation_value}\n{quality}{quality_value}"
-    )
+        quality = "+ Quality"
+        quality_value = report["quality"].rjust(31).ljust(32)
+        resume = f"{total}{total_value}\n{violation}{violation_value}\n{quality}{quality_value}"
 
-    # Summary
-    return _create_summary_report(QUALITY_REPORT, report, resume, footer)
+        return _create_summary_report(QUALITY_REPORT, report, resume, footer)
+
+    return ""
 
 
 def create_standard_summary(commits):
