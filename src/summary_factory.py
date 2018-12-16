@@ -64,7 +64,8 @@ def create_coverage_summary(report, footer):
     summary = summary.replace("#FOOTER#", footer)
     summary = summary.replace("#CONTENT_PLACEHOLDER#", "\n".join(content))
     summary = summary.replace("#RESUME_PLACEHOLDER#", resume)
-    return summary
+
+    return summary.strip()
 
 
 def create_standard_summary(commits):
