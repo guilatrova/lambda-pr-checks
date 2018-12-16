@@ -1,0 +1,26 @@
+[
+    {
+        "path": "quality-reports/.diff_cov.txt",
+        "pretty_path": "quality-reports/.diff_cov.txt",
+        "node_index": 0,
+        "url": "https://1234-56789-gh.circle-artifacts.com/0/quality-reports/.diff_cov.txt"
+    },
+    {
+        "path": "quality-reports/.diff_flake8.txt",
+        "pretty_path": "quality-reports/.diff_flake8.txt",
+        "node_index": 0,
+        "url": "https://1234-56789-gh.circle-artifacts.com/0/quality-reports/.diff_flake8.txt"
+    },
+    {
+        "path": "quality-reports/coverage.html",
+        "pretty_path": "quality-reports/coverage.html",
+        "node_index": 0,
+        "url": "https://1234-56789-gh.circle-artifacts.com/0/quality-reports/coverage.html"
+    },
+    {
+        "path": "quality-reports/flake8.html",
+        "pretty_path": "quality-reports/flake8.html",
+        "node_index": 0,
+        "url": "https://1234-56789-gh.circle-artifacts.com/0/quality-reports/flake8.html"
+    }
+]

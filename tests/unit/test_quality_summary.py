@@ -1,4 +1,11 @@
+import json
+
 from src import quality_summary
+
+
+def check_report_url(reports, key, file):
+    assert "circle-artifacts" in reports[key]["url"]
+    assert file in reports[key]["url"]
 
 
 def test_read_coverage_file(mocker, covdiff_content):
@@ -29,3 +36,17 @@ def test_read_coverage_empty_file(mocker, covdiff_empty_content):
     report = quality_summary._read_coverage_file("")
 
     assert report is False
+
+
+def test_get_reports_link(mocker, ci_artifacts_payload):
+    mocker.patch.object(
+        quality_summary.circleci,
+        "get_artifacts_from_build",
+        return_value=json.loads(ci_artifacts_payload),
+    )
+
+    reports = quality_summary._get_reports_link("", "", "")
+
+    assert len(reports.keys()) == 2
+    check_report_url(reports, "flake8", "flake8.html")
+    check_report_url(reports, "coverage", "coverage.html")

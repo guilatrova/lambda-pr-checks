@@ -11,6 +11,11 @@ def _read_payload(filename):
 
 
 @pytest.fixture()
+def ci_artifacts_payload():
+    return _read_payload("circleci_artifacts.json")
+
+
+@pytest.fixture()
 def covdiff_content():
     return _read_payload("covdiff.txt")
 

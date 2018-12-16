@@ -3,10 +3,28 @@ import re
 
 try:
     import s3
+    import circleci
 except ModuleNotFoundError:  # For tests
     from . import s3
+    from . import circleci
 
 COV_EMPTY_TEXT = "No lines with coverage information in this diff."
+COV_REPORT_FOOTER = "See details in the [coverage report](#COV_LINK#)."
+
+
+def _get_reports_link(owner, project, build_num):
+    artifacts = circleci.get_artifacts_from_build(owner, project, build_num)
+    reports = {
+        "coverage": {"name": "coverage.html", "url": ""},
+        "flake8": {"name": "flake8.html", "url": ""},
+    }
+
+    for artifact in artifacts:
+        for key in reports.keys():
+            if artifact["path"].endswith(reports[key]["name"]):
+                reports[key]["url"] = artifact["url"]
+
+    return reports
 
 
 def _read_coverage_file(hash):
