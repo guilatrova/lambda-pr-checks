@@ -10,6 +10,7 @@ except ModuleNotFoundError:  # For tests
 
 COV_EMPTY_TEXT = "No lines with coverage information in this diff."
 COV_REPORT_FOOTER = "See details in the [**coverage report**](#COV_LINK#)."
+QUALITY_EMPTY_TEXT = "No lines with quality information in this diff."
 QUALITY_REPORT_FOOTER = "See details in the [**quality report**](#QUALITY_LINK#)."
 
 
@@ -49,21 +50,24 @@ def _read_coverage_file(hash):
 def _read_quality_file(hash):
     content = s3.get_quality_file(hash)
 
-    report = {}
-    report["target_branch"] = re.search(r"Diff: (.*)\.\.\.", content).group(1)
-    report["total"] = re.search(r"Total: (.*) lines", content).group(1).strip()
-    report["violations"] = (
-        re.search(r"Violations: (.*) lines", content).group(1).strip()
-    )
-    report["quality"] = re.search(r"Quality: (.*)", content).group(1).strip()
+    if content and QUALITY_EMPTY_TEXT not in content:
+        report = {}
+        report["target_branch"] = re.search(r"Diff: (.*)\.\.\.", content).group(1)
+        report["total"] = re.search(r"Total: (.*) lines", content).group(1).strip()
+        report["violations"] = (
+            re.search(r"Violations: (.*) lines", content).group(1).strip()
+        )
+        report["quality"] = re.search(r"Quality: (.*)", content).group(1).strip()
 
-    matches = re.findall(r"(.*):(\d+): ([A-Z]\d+) (.*)", content)
-    report["issues"] = matches
+        matches = re.findall(r"(.*):(\d+): ([A-Z]\d+) (.*)", content)
+        report["issues"] = matches
 
-    matches = re.findall(r"(.*) \((.*)\)", content)
-    report["files"] = matches
+        matches = re.findall(r"(.*) \((.*)\)", content)
+        report["files"] = matches
 
-    return report
+        return report
+
+    return False
 
 
 def handler(event, context):
