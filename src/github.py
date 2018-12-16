@@ -2,17 +2,10 @@ import os
 
 import requests
 
-STANDARD_SUMMARY = """
-Some patterns errors were found:
-
-```diff
-Commits
-=============
-#PLACEHOLDER#
-```
-
-Read the [docs](#DOCS#) for more details
-"""
+try:
+    import summary_factory
+except ModuleNotFoundError:  # For tests
+    from . import summary_factory
 
 
 class GitHubException(Exception):
@@ -30,20 +23,12 @@ def _get_gh_headers():
     }
 
 
-def _create_summary_content(commits):
-    content = []
-    for commit in commits:
-        standard = "+" if commit["standard"] else "-"
-        sha = commit["sha"][:7]
-        message = commit["message"]
-        content.append(f"{standard} {sha} {message}")
-
-    joined = "\n".join(content)
-
-    summary = STANDARD_SUMMARY.replace("#PLACEHOLDER#", joined)
-    summary = summary.replace("#DOCS#", os.environ.get("DOCS_STANDARD_LINK", ""))
-
-    return summary.strip()
+def _truncate_string(string, width):
+    truncate_diff = width - len(string)
+    if truncate_diff < 0:
+        start = -truncate_diff + 3
+        return "..." + string[start:]
+    return string
 
 
 def get_commits(url):
@@ -69,6 +54,10 @@ def get_open_prs(repo):
 
 def write_standard_summary(url, analyzed):
     headers = _get_gh_headers()
-    body = {"body": _create_summary_content(analyzed)}
+    body = {"body": summary_factory.create_standard_summary(analyzed)}
 
     return requests.post(url, json=body, headers=headers)
+
+
+def write_quality_summary(url, cov_report, quality_report):
+    pass

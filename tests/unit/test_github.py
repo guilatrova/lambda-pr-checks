@@ -35,7 +35,9 @@ def test_get_commits(expected_headers, mocker):
 
 def test_write_standard_summary(expected_headers, mocker):
     mocker.patch.dict(os.environ, {"GITHUB_TOKEN": "123456"})
-    mocker.patch.object(github, "_create_summary_content", return_value="content")
+    mocker.patch.object(
+        github.summary_factory, "create_standard_summary", return_value="content"
+    )
     request = mocker.patch.object(github.requests, "post", return_value=MagicMock())
 
     github.write_standard_summary("url", [])
@@ -54,19 +56,3 @@ def test_get_open_prs(expected_headers, mocker):
         "https://api.github.com/repos/guilatrova/examplerepo/pulls?state=open",
         headers=expected_headers,
     )
-
-
-def test_create_summary_content(mocker):
-    mocker.patch.dict(os.environ, {"DOCS_STANDARD_LINK": "companystandard.com"})
-    commits = [
-        {"standard": True, "sha": "123456789", "message": "Message"},
-        {"standard": False, "sha": "123456789", "message": "Message 2"},
-    ]
-
-    actual = github._create_summary_content(commits)
-    assert "diff" in actual
-    assert "+ 1234567 Message\n" in actual
-    assert "- 1234567 Message 2\n" in actual
-    assert "[docs](companystandard.com)" in actual
-    assert "#PLACEHOLDER#" not in actual
-    assert "#DOCS#" not in actual
