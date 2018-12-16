@@ -2,7 +2,7 @@ import os
 
 import requests
 
-ERROR_SUMMARY = """
+STANDARD_SUMMARY = """
 Some patterns errors were found:
 
 ```diff
@@ -40,7 +40,7 @@ def _create_summary_content(commits):
 
     joined = "\n".join(content)
 
-    summary = ERROR_SUMMARY.replace("#PLACEHOLDER#", joined)
+    summary = STANDARD_SUMMARY.replace("#PLACEHOLDER#", joined)
     summary = summary.replace("#DOCS#", os.environ.get("DOCS_STANDARD_LINK", ""))
 
     return summary.strip()
