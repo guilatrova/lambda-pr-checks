@@ -30,6 +30,24 @@ COVERAGE_REPORT = """
 #FOOTER#
 """
 
+QUALITY_REPORT = """
+## Quality Report
+
+> Comparing to #TARGET_BRANCH#
+
+```diff
+@@            Quality  Diff            @@
+=========================================
++ Files                          Quality
+=========================================
+#CONTENT_PLACEHOLDER#
+=========================================
+#RESUME_PLACEHOLDER#
+```
+
+#FOOTER#
+"""
+
 
 def truncate_string(string, width):
     truncate_diff = width - len(string)
@@ -58,6 +76,37 @@ def create_coverage_summary(report, footer):
     coverage = "+ Coverage"
     coverage_value = report["coverage"].rjust(30).ljust(31)
     resume = f"{covered}{covered_value}\n{missing}{missing_value}\n{coverage}{coverage_value}"
+
+    # Summary
+    summary = COVERAGE_REPORT.replace("#TARGET_BRANCH#", report["target_branch"])
+    summary = summary.replace("#FOOTER#", footer)
+    summary = summary.replace("#CONTENT_PLACEHOLDER#", "\n".join(content))
+    summary = summary.replace("#RESUME_PLACEHOLDER#", resume)
+
+    return summary.strip()
+
+
+def create_quality_summary(report, footer):
+    # Len is 41
+    # Content
+    content = []
+    for file in report["files"]:
+        name = truncate_string(file[0], 33).ljust(33)
+        value = file[1].rjust(7).ljust(8)
+        content.append(f"{name}{value}")
+
+    # Resume
+    total = "+ Total lines"
+    total_value = report["total"].rjust(25).ljust(26)
+
+    violation = "- Violation lines"
+    violation_value = report["violations"].rjust(25).ljust(26)
+
+    quality = "+ Quality"
+    quality_value = report["quality"].rjust(30).ljust(31)
+    resume = (
+        f"{total}{total_value}\n{violation}{violation_value}\n{quality}{quality_value}"
+    )
 
     # Summary
     summary = COVERAGE_REPORT.replace("#TARGET_BRANCH#", report["target_branch"])
