@@ -23,14 +23,6 @@ def _get_gh_headers():
     }
 
 
-def _truncate_string(string, width):
-    truncate_diff = width - len(string)
-    if truncate_diff < 0:
-        start = -truncate_diff + 3
-        return "..." + string[start:]
-    return string
-
-
 def get_commits(url):
     headers = _get_gh_headers()
     response = requests.get(url, headers=headers)

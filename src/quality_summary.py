@@ -75,4 +75,8 @@ def handler(event, context):
 
     commit_sha = cievent["commit_sha"]
 
-    _read_coverage_file(commit_sha)
+    cov_report = _read_coverage_file(commit_sha)
+    quality_report = _read_quality_file(commit_sha)
+    report_links = _get_reports_link(
+        cievent["owner"], cievent["project"], cievent["build_num"]
+    )

@@ -18,7 +18,7 @@ def test_read_coverage_file(mocker, covdiff_content):
     assert len(report["files"]) == 4
     assert len(report["files"][0]) == 3
 
-    assert report["files"][0][0] == "example/worker/feedback/models.py"
+    assert report["files"][0][0] == "example/models/worker/feedback/models.py"
     assert report["files"][0][1] == "60.0%"
     assert report["files"][0][2] == ": Missing lines 24-25"
 
