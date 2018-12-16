@@ -57,7 +57,7 @@ def truncate_string(string, width):
     return string
 
 
-def create_coverage_summary(report, footer):
+def _create_summary_report(template, report, resume, footer):
     # Len is 41
     # Content
     content = []
@@ -66,6 +66,15 @@ def create_coverage_summary(report, footer):
         value = file[1].rjust(7).ljust(8)
         content.append(f"{name}{value}")
 
+    summary = template.replace("#TARGET_BRANCH#", report["target_branch"])
+    summary = summary.replace("#FOOTER#", footer)
+    summary = summary.replace("#CONTENT_PLACEHOLDER#", "\n".join(content))
+    summary = summary.replace("#RESUME_PLACEHOLDER#", resume)
+
+    return summary.strip()
+
+
+def create_coverage_summary(report, footer):
     # Resume
     covered = "+ Covered lines"
     covered_value = report["total"].rjust(25).ljust(26)
@@ -77,24 +86,10 @@ def create_coverage_summary(report, footer):
     coverage_value = report["coverage"].rjust(30).ljust(31)
     resume = f"{covered}{covered_value}\n{missing}{missing_value}\n{coverage}{coverage_value}"
 
-    # Summary
-    summary = COVERAGE_REPORT.replace("#TARGET_BRANCH#", report["target_branch"])
-    summary = summary.replace("#FOOTER#", footer)
-    summary = summary.replace("#CONTENT_PLACEHOLDER#", "\n".join(content))
-    summary = summary.replace("#RESUME_PLACEHOLDER#", resume)
-
-    return summary.strip()
+    return _create_summary_report(COVERAGE_REPORT, report, resume, footer)
 
 
 def create_quality_summary(report, footer):
-    # Len is 41
-    # Content
-    content = []
-    for file in report["files"]:
-        name = truncate_string(file[0], 33).ljust(33)
-        value = file[1].rjust(7).ljust(8)
-        content.append(f"{name}{value}")
-
     # Resume
     total = "+ Total lines"
     total_value = report["total"].rjust(27).ljust(28)
@@ -109,12 +104,7 @@ def create_quality_summary(report, footer):
     )
 
     # Summary
-    summary = QUALITY_REPORT.replace("#TARGET_BRANCH#", report["target_branch"])
-    summary = summary.replace("#FOOTER#", footer)
-    summary = summary.replace("#CONTENT_PLACEHOLDER#", "\n".join(content))
-    summary = summary.replace("#RESUME_PLACEHOLDER#", resume)
-
-    return summary.strip()
+    return _create_summary_report(QUALITY_REPORT, report, resume, footer)
 
 
 def create_standard_summary(commits):
