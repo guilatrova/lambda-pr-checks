@@ -47,7 +47,23 @@ def _read_coverage_file(hash):
 
 
 def _read_quality_file(hash):
-    pass
+    content = s3.get_quality_file(hash)
+
+    report = {}
+    report["target_branch"] = re.search(r"Diff: (.*)\.\.\.", content).group(1)
+    report["total"] = re.search(r"Total: (.*) lines", content).group(1).strip()
+    report["violations"] = (
+        re.search(r"Violations: (.*) lines", content).group(1).strip()
+    )
+    report["quality"] = re.search(r"Quality: (.*)", content).group(1).strip()
+
+    matches = re.findall(r"(.*):(\d+): ([A-Z]\d+) (.*)", content)
+    report["issues"] = matches
+
+    matches = re.findall(r"(.*) \((.*)\)", content)
+    report["files"] = matches
+
+    return report
 
 
 def handler(event, context):

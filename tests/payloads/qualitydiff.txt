@@ -1,7 +1,7 @@
 -------------
 Diff Quality
 Quality Report: flake8
-Diff: NO-TICKET-code-diff...HEAD, staged and unstaged changes
+Diff: origin/dev...HEAD, staged and unstaged changes
 -------------
 example/workers/feedback/models.py (80.0%):
 example/workers/feedback/models.py:3: F401 'sqlalchemy.String' imported but unused
