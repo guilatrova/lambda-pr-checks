@@ -97,19 +97,19 @@ def create_quality_summary(report, footer):
 
     # Resume
     total = "+ Total lines"
-    total_value = report["total"].rjust(25).ljust(26)
+    total_value = report["total"].rjust(27).ljust(28)
 
     violation = "- Violation lines"
-    violation_value = report["violations"].rjust(25).ljust(26)
+    violation_value = report["violations"].rjust(23).ljust(24)
 
     quality = "+ Quality"
-    quality_value = report["quality"].rjust(30).ljust(31)
+    quality_value = report["quality"].rjust(31).ljust(32)
     resume = (
         f"{total}{total_value}\n{violation}{violation_value}\n{quality}{quality_value}"
     )
 
     # Summary
-    summary = COVERAGE_REPORT.replace("#TARGET_BRANCH#", report["target_branch"])
+    summary = QUALITY_REPORT.replace("#TARGET_BRANCH#", report["target_branch"])
     summary = summary.replace("#FOOTER#", footer)
     summary = summary.replace("#CONTENT_PLACEHOLDER#", "\n".join(content))
     summary = summary.replace("#RESUME_PLACEHOLDER#", resume)

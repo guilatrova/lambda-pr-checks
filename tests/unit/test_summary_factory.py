@@ -29,6 +29,7 @@ def test_create_coverage_summary(mocker, covdiff_content):
     result = summary_factory.create_coverage_summary(report, "footer_message")
 
     # General
+    assert "## Coverage Report" in result
     assert "origin/dev" in result
     assert "footer_message" in result
     assert "\n+ Covered lines" in result
@@ -53,6 +54,7 @@ def test_create_quality_summary(mocker, qualitydiff_content):
     result = summary_factory.create_quality_summary(report, "footer_message")
 
     # General
+    assert "## Quality Report" in result
     assert "origin/dev" in result
     assert "footer_message" in result
     assert "\n+ Total lines" in result
