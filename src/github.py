@@ -67,7 +67,7 @@ def get_open_prs(repo):
     return response.json()
 
 
-def write_error_summary(url, analyzed):
+def write_standard_summary(url, analyzed):
     headers = _get_gh_headers()
     body = {"body": _create_summary_content(analyzed)}
 

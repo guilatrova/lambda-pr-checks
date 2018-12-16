@@ -63,7 +63,7 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
     mocker.patch.object(pr_standard, "_validate_title", return_value=True)
     mocker.patch.object(pr_standard, "_validate_commits", return_value=(True, []))
     error_summary_mock = mocker.patch.object(
-        pr_standard.github, "write_error_summary", return_value=MagicMock()
+        pr_standard.github, "write_standard_summary", return_value=MagicMock()
     )
 
     response = pr_standard.handler(event, "")
@@ -89,7 +89,7 @@ def test_lambda_handler_invalid_pr_title(
     )
     mocker.patch.object(pr_standard, "_validate_title", return_value=False)
     error_summary_mock = mocker.patch.object(
-        pr_standard.github, "write_error_summary", return_value=MagicMock()
+        pr_standard.github, "write_standard_summary", return_value=MagicMock()
     )
 
     response = pr_standard.handler(event, "")
@@ -121,7 +121,7 @@ def test_lambda_handler_invalid_commits(
         return_value=(False, pr_standard.PR_COMMITS_FAILURE_MESSAGE, commits_analyzed),
     )
     error_summary_mock = mocker.patch.object(
-        pr_standard.github, "write_error_summary", return_value=MagicMock()
+        pr_standard.github, "write_standard_summary", return_value=MagicMock()
     )
 
     response = pr_standard.handler(event, "")

@@ -81,7 +81,7 @@ def handler(event, context):
 
     if not valid_pr and len(commits_analyzed) > 0:
         logger.info("Invalid commits found - Writing summary")
-        github.write_error_summary(
+        github.write_standard_summary(
             ghevent["pull_request"]["comments_url"], commits_analyzed
         )
         logger.info("Summary written")
