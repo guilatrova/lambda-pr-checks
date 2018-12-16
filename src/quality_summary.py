@@ -9,7 +9,8 @@ except ModuleNotFoundError:  # For tests
     from . import circleci
 
 COV_EMPTY_TEXT = "No lines with coverage information in this diff."
-COV_REPORT_FOOTER = "See details in the [coverage report](#COV_LINK#)."
+COV_REPORT_FOOTER = "See details in the [**coverage report**](#COV_LINK#)."
+QUALITY_REPORT_FOOTER = "See details in the [**quality report**](#QUALITY_LINK#)."
 
 
 def _get_reports_link(owner, project, build_num):
@@ -43,6 +44,10 @@ def _read_coverage_file(hash):
         return report
 
     return False
+
+
+def _read_quality_file(hash):
+    pass
 
 
 def handler(event, context):

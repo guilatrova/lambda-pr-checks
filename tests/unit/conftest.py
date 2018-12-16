@@ -16,6 +16,11 @@ def ci_artifacts_payload():
 
 
 @pytest.fixture()
+def qualitydiff_content():
+    return _read_payload("qualitydiff.txt")
+
+
+@pytest.fixture()
 def covdiff_content():
     return _read_payload("covdiff.txt")
 
