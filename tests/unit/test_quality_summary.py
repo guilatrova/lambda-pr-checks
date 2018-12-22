@@ -135,7 +135,7 @@ def test_update_status_summary_all_successful_reports(mocker):
     )
     update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
 
-    quality_summary._update_github_status_summary(
+    quality_summary._update_github_pr(
         summary_url, status_url, cov_report, quality_report, footers
     )
 

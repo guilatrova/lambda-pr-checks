@@ -14,8 +14,12 @@ except ModuleNotFoundError:  # For tests
 
 COV_EMPTY_TEXT = "No lines with coverage information in this diff."
 COV_REPORT_FOOTER = "See details in the [**coverage report**](#COV_LINK#)."
+COV_THRESHOLD = 80
+
 QUALITY_EMPTY_TEXT = "No lines with quality information in this diff."
 QUALITY_REPORT_FOOTER = "See details in the [**quality report**](#QUALITY_LINK#)."
+QUALITY_THRESHOLD = 100
+
 OK_RESPONSE = {
     "statusCode": 200,
     "headers": {"Content-Type": "application/json"},
@@ -24,6 +28,9 @@ OK_RESPONSE = {
 
 
 def _get_footers(cievent):
+    """
+    Returns two footers to be appended to summaries
+    """
     report_links = _get_reports_link(
         cievent["owner"], cievent["project"], cievent["build_num"]
     )
@@ -39,6 +46,9 @@ def _get_footers(cievent):
 
 
 def _get_reports_link(owner, project, build_num):
+    """
+    Returns artifacts links from CircleCI
+    """
     artifacts = circleci.get_artifacts_from_build(owner, project, build_num)
     reports = {
         "coverage": {"name": "coverage.html", "url": ""},
@@ -120,39 +130,37 @@ def _get_pr_urls(raw_url, commit_sha):
     return (summary_url, statuses_url)
 
 
-def _update_github_status_summary(
-    summary_url, statuses_url, cov_report, quality_report, footers
-):
+def _update_github_status(report, url, key, threshold):
+    """
+    Update PR check status comparing data from report[key] to threshold
+    """
+    if report:
+        title = key.capitalize()
+        value = int(re.sub(r"\D", "", report[key]))
+        if value >= threshold:
+            pr_state = "success"
+            description = f"{title} diff is good!"
+        else:
+            pr_state = "failure"
+            description = (
+                f"{title} diff is below expected ({value}% out of {threshold}%)"
+            )
+
+        github.update_pr_status(url, pr_state, f"FineTune {title}", description)
+
+
+def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, footers):
+    """
+    Updates GitHub PR with a summary and two checks for coverage and quality
+    """
     # Summary
     github.write_quality_summary(
         summary_url, cov_report, quality_report, footers["coverage"], footers["quality"]
     )
 
-    # Coverage Status
-    if cov_report:
-        coverage = int(re.sub(r"\D", "", cov_report["coverage"]))
-        if coverage >= 80:
-            pr_state = "success"
-            description = "Coverage diff is good!"
-        else:
-            pr_state = "failure"
-            description = f"Coverage diff is below expected ({coverage}% out of 80%)"
-
-        github.update_pr_status(
-            statuses_url, pr_state, "FineTune Coverage", description
-        )
-
-    # Quality Status
-    if quality_report:
-        quality = int(re.sub(r"\D", "", quality_report["quality"]))
-        if quality >= 100:
-            pr_state = "success"
-            description = "Quality diff is good!"
-        else:
-            pr_state = "failure"
-            description = f"Quality diff is below expected ({quality}% out of 100%)"
-
-        github.update_pr_status(statuses_url, pr_state, "FineTune Quality", description)
+    # PR checks
+    _update_github_status(cov_report, statuses_url, "coverage", COV_THRESHOLD)
+    _update_github_status(quality_report, statuses_url, "quality", QUALITY_THRESHOLD)
 
 
 @error_handler.wrapper_for("github")
@@ -168,7 +176,7 @@ def ci_handler(event, context):
         summary_url, statuses_url = _get_pr_urls(cievent["pr_link"])
         footers = _get_footers(cievent)
 
-        _update_github_status_summary(
+        _update_github_pr(
             summary_url, statuses_url, cov_report, quality_report, footers
         )
 
