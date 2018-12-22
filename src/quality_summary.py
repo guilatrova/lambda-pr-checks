@@ -5,15 +5,22 @@ try:
     import s3
     import circleci
     import github
+    import error_handler
 except ModuleNotFoundError:  # For tests
     from . import s3
     from . import circleci
     from . import github
+    from . import error_handler
 
 COV_EMPTY_TEXT = "No lines with coverage information in this diff."
 COV_REPORT_FOOTER = "See details in the [**coverage report**](#COV_LINK#)."
 QUALITY_EMPTY_TEXT = "No lines with quality information in this diff."
 QUALITY_REPORT_FOOTER = "See details in the [**quality report**](#QUALITY_LINK#)."
+OK_RESPONSE = {
+    "statusCode": 200,
+    "headers": {"Content-Type": "application/json"},
+    "body": json.dumps("ok"),
+}
 
 
 def _get_footers(cievent):
@@ -121,13 +128,34 @@ def _update_github_status_summary(
         summary_url, cov_report, quality_report, footers["coverage"], footers["quality"]
     )
 
-    # Status
-    # pr_state = "success" if condition else "failure"
-    # description = "Coverage x% and Quality y%"
-    # github.update_pr_status(status_url, pr_state, "FineTune Coverage", description)
-    # github.update_pr_status(status_url, pr_state, "FineTune Quality", description)
+    # Coverage Status
+    if cov_report:
+        coverage = int(re.sub(r"\D", "", cov_report["coverage"]))
+        if coverage >= 80:
+            pr_state = "success"
+            description = "Coverage diff is good!"
+        else:
+            pr_state = "failure"
+            description = f"Coverage diff is below expected ({coverage}% out of 80%)"
+
+        github.update_pr_status(
+            statuses_url, pr_state, "FineTune Coverage", description
+        )
+
+    # Quality Status
+    if quality_report:
+        quality = int(re.sub(r"\D", "", quality_report["quality"]))
+        if quality >= 100:
+            pr_state = "success"
+            description = "Quality diff is good!"
+        else:
+            pr_state = "failure"
+            description = f"Quality diff is below expected ({quality}% out of 100%)"
+
+        github.update_pr_status(statuses_url, pr_state, "FineTune Quality", description)
 
 
+@error_handler.wrapper_for("github")
 def ci_handler(event, context):
     cievent = json.loads(event.get("body"))
     commit_sha = cievent["commit_sha"]
@@ -143,3 +171,5 @@ def ci_handler(event, context):
         _update_github_status_summary(
             summary_url, statuses_url, cov_report, quality_report, footers
         )
+
+    return OK_RESPONSE

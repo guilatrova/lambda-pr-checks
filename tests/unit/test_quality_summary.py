@@ -1,4 +1,5 @@
 import json
+from unittest.mock import call
 
 from src import quality_summary
 
@@ -119,3 +120,36 @@ def test_get_pr_urls():
         urls[1]
         == "https://api.github.com/repos/owner-here/repository-here/statuses/commit-hash"
     )
+
+
+def test_update_status_summary_all_successful_reports(mocker):
+    # Arrange
+    cov_report = {"coverage": "100%"}
+    quality_report = {"quality": "100%"}
+    footers = {"quality": "quality", "coverage": "coverage"}
+    status_url = "status_url"
+    summary_url = "summary_url"
+
+    write_summary_mock = mocker.patch.object(
+        quality_summary.github, "write_quality_summary"
+    )
+    update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
+
+    quality_summary._update_github_status_summary(
+        summary_url, status_url, cov_report, quality_report, footers
+    )
+
+    # Act
+    write_summary_mock.assert_called_once_with(
+        summary_url, cov_report, quality_report, footers["coverage"], footers["quality"]
+    )
+
+    # Assert
+    assert update_status_mock.call_count == 2
+    coverage_call = call(
+        status_url, "success", "FineTune Coverage", "Coverage diff is good!"
+    )
+    quality_call = call(
+        status_url, "success", "FineTune Quality", "Quality diff is good!"
+    )
+    update_status_mock.assert_has_calls([coverage_call, quality_call])
