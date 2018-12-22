@@ -51,5 +51,14 @@ def write_standard_summary(url, analyzed):
     return requests.post(url, json=body, headers=headers)
 
 
-def write_quality_summary(url, cov_report, quality_report):
-    pass
+def write_quality_summary(url, cov_report, quality_report, cov_footer, quality_footer):
+    headers = _get_gh_headers()
+
+    cov_summary = summary_factory.create_coverage_summary(cov_report, cov_footer)
+    quality_summary = summary_factory.create_quality_summary(
+        quality_report, quality_footer
+    )
+
+    body = {"body": f"{cov_summary}\n{quality_summary}"}
+
+    return requests.post(url, json=body, headers=headers)
