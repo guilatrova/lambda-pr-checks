@@ -2,15 +2,17 @@ import json
 import re
 
 try:
-    import s3
     import circleci
-    import github
+    import dynamodb
     import error_handler
+    import github
+    import s3
 except ModuleNotFoundError:  # For tests
-    from . import s3
     from . import circleci
-    from . import github
+    from . import dynamodb
     from . import error_handler
+    from . import github
+    from . import s3
 
 COV_EMPTY_TEXT = "No lines with coverage information in this diff."
 COV_REPORT_FOOTER = "See details in the [**coverage report**](#COV_LINK#)."
@@ -180,6 +182,7 @@ def ci_handler(event, context):
 
     cov_report = _read_coverage_file(commit_sha)
     quality_report = _read_quality_file(commit_sha)
+    dynamodb.save_reports(cov_report, quality_report, **cievent)
 
     if cievent["pr_link"]:
         # Expected format: https://github.com/:owner/:repo/pull/:number
