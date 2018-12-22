@@ -64,6 +64,11 @@ def _get_reports_link(owner, project, build_num):
 
 
 def _read_coverage_file(hash):
+    """
+    Generates a coverage report with info extracted from S3 file
+    The report contains:
+        "target_branch", "total", "missing", "coverage" and "files"
+    """
     content = s3.get_coverage_file(hash)
 
     if content and COV_EMPTY_TEXT not in content:
@@ -82,6 +87,11 @@ def _read_coverage_file(hash):
 
 
 def _read_quality_file(hash):
+    """
+    Generates a quality report with info extracted from S3 file
+    The report contains:
+        "target_branch", "total", "violations", "quality", "issues" and "files"
+    """
     content = s3.get_quality_file(hash)
 
     if content and QUALITY_EMPTY_TEXT not in content:
@@ -132,7 +142,7 @@ def _get_pr_urls(raw_url, commit_sha):
 
 def _update_github_status(report, url, key, threshold):
     """
-    Update PR check status comparing data from report[key] to threshold
+    Updates PR check status comparing data from report[key] to threshold
     """
     if report:
         title = key.capitalize()
