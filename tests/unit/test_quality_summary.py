@@ -122,6 +122,28 @@ def test_get_pr_urls():
     )
 
 
+def test_update_github_status_success(mocker):
+    update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
+    report = {"key": "30%"}
+
+    quality_summary._update_github_status(report, "url", "key", 50)
+
+    update_status_mock.assert_called_once_with(
+        "url", "failure", "FineTune Key", "Key diff is below expected (30% out of 50%)"
+    )
+
+
+def test_update_github_status_failure(mocker):
+    update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
+    report = {"key": "50%"}
+
+    quality_summary._update_github_status(report, "url", "key", 50)
+
+    update_status_mock.assert_called_once_with(
+        "url", "success", "FineTune Key", "Key diff is good!"
+    )
+
+
 def test_update_status_summary_all_successful_reports(mocker):
     # Arrange
     cov_report = {"coverage": "100%"}
