@@ -1,7 +1,9 @@
+import os
+
 import boto3
 from botocore.exceptions import ClientError
 
-BUCKET_NAME = "quality-reports"
+BUCKET_NAME = os.environ.get("BUCKET_NAME", "ci-quality-reports")
 
 
 def _get_file(prefix, hash):

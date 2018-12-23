@@ -79,7 +79,10 @@ def _read_coverage_file(hash):
         report["coverage"] = re.search(r"Coverage: (.*)", content).group(1).strip()
 
         matches = re.findall(r"(.*) \((.*)\)(.*)", content)
-        report["files"] = matches
+        report["files"] = [
+            {"file": match[0], "value": match[1], "missing": match[2]}
+            for match in matches
+        ]
 
         return report
 
@@ -104,10 +107,18 @@ def _read_quality_file(hash):
         report["quality"] = re.search(r"Quality: (.*)", content).group(1).strip()
 
         matches = re.findall(r"(.*):(\d+): ([A-Z]\d+) (.*)", content)
-        report["issues"] = matches
+        report["issues"] = [
+            {
+                "file": match[0],
+                "line": match[1],
+                "error_code": match[2],
+                "description": match[3],
+            }
+            for match in matches
+        ]
 
         matches = re.findall(r"(.*) \((.*)\)", content)
-        report["files"] = matches
+        report["files"] = [{"file": match[0], "value": match[1]} for match in matches]
 
         return report
 

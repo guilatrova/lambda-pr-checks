@@ -41,6 +41,8 @@ def save_reports(cov_report, quality_report, **kwargs):
 
     # Below line is just to be obvious and show the Key, it's not really required
     commit_sha = kwargs.pop("commit_sha")
+    if not kwargs["pr_link"]:
+        kwargs.pop("pr_link")
 
     table.put_item(
         Item={

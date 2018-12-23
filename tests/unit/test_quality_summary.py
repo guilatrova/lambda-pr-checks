@@ -19,9 +19,9 @@ def test_read_coverage_file(mocker, covdiff_content):
     assert len(report["files"]) == 4
     assert len(report["files"][0]) == 3
 
-    assert report["files"][0][0] == "example/models/worker/feedback/models.py"
-    assert report["files"][0][1] == "60.0%"
-    assert report["files"][0][2] == ": Missing lines 24-25"
+    assert report["files"][0]["file"] == "example/models/worker/feedback/models.py"
+    assert report["files"][0]["value"] == "60.0%"
+    assert report["files"][0]["missing"] == ": Missing lines 24-25"
 
     assert report["target_branch"] == "origin/dev"
     assert report["total"] == "85"
@@ -51,18 +51,20 @@ def test_read_quality_file(mocker, qualitydiff_content):
     assert len(report["issues"][0]) == 4
 
     # Issue in-depth
-    assert report["issues"][0][0] == "example/workers/feedback/models.py"
-    assert report["issues"][0][1] == "3"
-    assert report["issues"][0][2] == "F401"
-    assert report["issues"][0][3] == "'sqlalchemy.String' imported but unused"
+    assert report["issues"][0]["file"] == "example/workers/feedback/models.py"
+    assert report["issues"][0]["line"] == "3"
+    assert report["issues"][0]["error_code"] == "F401"
+    assert (
+        report["issues"][0]["description"] == "'sqlalchemy.String' imported but unused"
+    )
 
     # Files
     assert len(report["files"]) == 13
     assert len(report["files"][0]) == 2
 
     # Files in-depth
-    assert report["files"][0][0] == "example/workers/feedback/models.py"
-    assert report["files"][0][1] == "80.0%"
+    assert report["files"][0]["file"] == "example/workers/feedback/models.py"
+    assert report["files"][0]["value"] == "80.0%"
 
     # Overall
     assert report["target_branch"] == "origin/dev"

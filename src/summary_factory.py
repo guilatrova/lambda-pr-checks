@@ -62,8 +62,8 @@ def _create_summary_report(template, report, resume, footer):
     # Content
     content = []
     for file in report["files"]:
-        name = truncate_string(file[0], 33).ljust(33)
-        value = file[1].rjust(7).ljust(8)
+        name = truncate_string(file["file"], 33).ljust(33)
+        value = file["value"].rjust(7).ljust(8)
         content.append(f"{name}{value}")
 
     summary = template.replace("#TARGET_BRANCH#", report["target_branch"])

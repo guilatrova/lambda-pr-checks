@@ -65,7 +65,7 @@ def wrapper_for(integration):
                 logging.error("Exception catch by wrapper")
                 body = {
                     "type": "unknown",
-                    "exception": sys.exc_info()[0],
+                    "exception": repr(sys.exc_info()[0]),
                     "stacktrace": traceback.format_exc(),
                 }
 
