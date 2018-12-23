@@ -29,13 +29,11 @@ OK_RESPONSE = {
 }
 
 
-def _get_footers(cievent):
+def _get_footers(owner, project, build_num):
     """
     Returns two footers to be appended to summaries
     """
-    report_links = _get_reports_link(
-        cievent["owner"], cievent["project"], cievent["build_num"]
-    )
+    report_links = _get_reports_link(owner, project, build_num)
 
     return {
         "quality": QUALITY_REPORT_FOOTER.replace(
@@ -175,6 +173,7 @@ def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, foo
     _update_github_status(quality_report, statuses_url, "quality", QUALITY_THRESHOLD)
 
 
+# Although it's CI, GitHub fail response fits good though
 @error_handler.wrapper_for("github")
 def ci_handler(event, context):
     cievent = json.loads(event.get("body"))
@@ -187,10 +186,31 @@ def ci_handler(event, context):
     if cievent["pr_link"]:
         # Expected format: https://github.com/:owner/:repo/pull/:number
         summary_url, statuses_url = _get_pr_urls(cievent["pr_link"])
-        footers = _get_footers(cievent)
+        footers = _get_footers(
+            cievent["owner"], cievent["project"], cievent["build_num"]
+        )
 
         _update_github_pr(
             summary_url, statuses_url, cov_report, quality_report, footers
         )
 
     return OK_RESPONSE
+
+
+@error_handler.wrapper_for("github")
+def gh_handler(event, context):
+    ghevent = json.loads(event.get("body"))
+
+    summary_url = ghevent["pull_request"]["comments_url"]
+    statuses_url = ghevent["pull_request"]["statuses_url"]
+    commit_sha = ghevent["head"]["sha"]
+    report = dynamodb.get_report(commit_sha)
+
+    if report:
+        footers = _get_footers(report["owner"], report["project"], report["build_num"])
+        cov_report = report.get("cov_report", False)
+        quality_report = report.get("quality_report", False)
+
+        _update_github_pr(
+            summary_url, statuses_url, cov_report, quality_report, footers
+        )
