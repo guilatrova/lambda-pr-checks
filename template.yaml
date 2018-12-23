@@ -106,12 +106,14 @@ Resources:
         Properties:
             CodeUri: src/
             Handler: codefreezer.gh_handler
-            Policies: AmazonDynamoDBReadOnlyAccess
+            Policies:
+                - DynamoDBReadPolicy:
+                    TableName: !Ref QualityReportsTable
             Events:
                 Api:
                     Type: Api
                     Properties:
-                        Path: /codefreeze-status
+                        Path: /quality-status
                         Method: post
 
     QualityReportsTable:
