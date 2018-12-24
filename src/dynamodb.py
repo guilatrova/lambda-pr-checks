@@ -54,7 +54,7 @@ def save_reports(cov_report, quality_report, **kwargs):
     )
 
 
-def get_reports(commit_sha):
+def get_report(commit_sha):
     table = _get_table(QUALITY_TABLE)
     response = table.get_item(Key={"commit_sha": commit_sha})
 

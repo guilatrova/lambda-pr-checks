@@ -37,10 +37,10 @@ def _get_footers(owner, project, build_num):
 
     return {
         "quality": QUALITY_REPORT_FOOTER.replace(
-            "#QUALITY_LINK#", report_links.get("flake8", "")
+            "#QUALITY_LINK#", report_links["flake8"].get("url", "")
         ),
         "coverage": COV_REPORT_FOOTER.replace(
-            "#COV_LINK#", report_links.get("coverage", "")
+            "#COV_LINK#", report_links["coverage"].get("url", "")
         ),
     }
 
@@ -214,7 +214,7 @@ def gh_handler(event, context):
 
     summary_url = ghevent["pull_request"]["comments_url"]
     statuses_url = ghevent["pull_request"]["statuses_url"]
-    commit_sha = ghevent["head"]["sha"]
+    commit_sha = ghevent["pull_request"]["head"]["sha"]
     report = dynamodb.get_report(commit_sha)
 
     if report:
