@@ -23,6 +23,25 @@ def _get_gh_headers():
     }
 
 
+def _get_edit_url(url, *args):
+    """
+    Try to retrieve a comment_id by looking for any args inside text
+    """
+    headers = _get_gh_headers()
+    USER = os.environ.get("GITHUB_USER")
+
+    response = requests.get(url, headers=headers)
+    comments = response.json()
+
+    for comment in comments:
+        if any(text in comment["body"] for text in args):
+            if comment["user"]["login"] == USER:
+                return comment["url"]
+
+    # Not comment to edit, it should be created
+    return False
+
+
 def get_commits(url):
     headers = _get_gh_headers()
     response = requests.get(url, headers=headers)
@@ -59,6 +78,11 @@ def write_quality_summary(url, cov_report, quality_report, cov_footer, quality_f
         quality_report, quality_footer
     )
 
+    # TODO: What if both reports are empty?
     body = {"body": f"{cov_summary}\n{quality_summary}"}
 
-    return requests.post(url, json=body, headers=headers)
+    edit_url = _get_edit_url(url, "Coverage Diff", "Quality Diff")
+    if edit_url:
+        return requests.patch(edit_url, json=body, headers=headers)
+    else:
+        return requests.post(url, json=body, headers=headers)
