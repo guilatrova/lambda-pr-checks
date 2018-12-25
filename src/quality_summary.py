@@ -155,8 +155,9 @@ def _update_github_status(report, url, key, threshold):
     """
     Updates PR check status comparing data from report[key] to threshold
     """
+    title = key.capitalize()
+
     if report:
-        title = key.capitalize()
         value = int(re.sub(r"\D", "", report[key]))
         if value >= threshold:
             pr_state = "success"
@@ -166,8 +167,11 @@ def _update_github_status(report, url, key, threshold):
             description = (
                 f"{title} diff is below expected ({value}% out of {threshold}%)"
             )
+    else:
+        pr_state = "success"
+        description = "No report provided for this hash"
 
-        github.update_pr_status(url, pr_state, f"FineTune {title}", description)
+    github.update_pr_status(url, pr_state, f"FineTune {title}", description)
 
 
 def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, footers):

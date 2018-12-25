@@ -146,6 +146,16 @@ def test_update_github_status_failure(mocker):
     )
 
 
+def test_update_github_status_no_report(mocker):
+    update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
+
+    quality_summary._update_github_status(False, "url", "coverage", 50)
+
+    update_status_mock.assert_called_once_with(
+        "url", "success", "FineTune Coverage", "No report provided for this hash"
+    )
+
+
 def test_update_status_summary_all_successful_reports(mocker):
     # Arrange
     cov_report = {"coverage": "100%"}
