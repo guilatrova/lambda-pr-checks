@@ -5,7 +5,7 @@ import pytest
 
 def _read_payload(filename):
     script_dir = os.path.dirname(__file__)
-    file_path = os.path.join(script_dir, f"../payloads/{filename}")
+    file_path = os.path.join(script_dir, f"payloads/{filename}")
     with open(file_path) as data:
         return data.read()
 

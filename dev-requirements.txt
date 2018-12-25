@@ -1,4 +1,4 @@
 pytest
 pytest-mock
-boto3
-requests==2.20.0
+pytest-dotenv
+-r src/requirements.txt
