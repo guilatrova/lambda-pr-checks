@@ -27,9 +27,9 @@ def _get_gh_headers():
     }
 
 
-def _get_edit_url(url, *args):
+def _get_comment_url(url, *args):
     """
-    Try to retrieve a comment_id by looking for any args inside text
+    Try to retrieve comment_url by looking for any args inside text body
     """
     headers = _get_gh_headers()
     USER = os.environ.get("GITHUB_USER")
@@ -85,7 +85,7 @@ def write_quality_summary(url, cov_report, quality_report, cov_footer, quality_f
 
         body = {"body": f"{cov_summary}\n{quality_summary}"}
 
-        edit_url = _get_edit_url(url, "Coverage Diff", "Quality Diff")
+        edit_url = _get_comment_url(url, "Coverage Diff", "Quality Diff")
         if edit_url:
             return requests.patch(edit_url, json=body, headers=headers)
         else:
@@ -95,7 +95,7 @@ def write_quality_summary(url, cov_report, quality_report, cov_footer, quality_f
             "No report provided, so no summary to write."
             + "Let's check if we need to delete something."
         )
-        delete_url = _get_edit_url(url, "Coverage Diff", "Quality Diff")
+        delete_url = _get_comment_url(url, "Coverage Diff", "Quality Diff")
 
         if delete_url:
             return requests.delete(delete_url, headers=headers)

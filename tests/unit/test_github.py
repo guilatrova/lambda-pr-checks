@@ -77,7 +77,7 @@ def test_get_open_prs(expected_headers, mocker):
 def test_write_quality_summary_create_both_reports(
     mocker, cov_report, quality_report, expected_headers
 ):
-    mocker.patch.object(github, "_get_edit_url", return_value=False)
+    mocker.patch.object(github, "_get_comment_url", return_value=False)
     mocker.patch.object(
         github.summary_factory, "create_coverage_summary", return_value="covsummary"
     )
@@ -96,7 +96,7 @@ def test_write_quality_summary_create_both_reports(
 def test_write_quality_summary_update_both_reports(
     expected_headers, cov_report, quality_report, mocker
 ):
-    mocker.patch.object(github, "_get_edit_url", return_value="edit_url")
+    mocker.patch.object(github, "_get_comment_url", return_value="edit_url")
     mocker.patch.object(
         github.summary_factory, "create_coverage_summary", return_value="covsummary"
     )
@@ -113,7 +113,7 @@ def test_write_quality_summary_update_both_reports(
 
 
 def test_write_quality_create_no_reports(expected_headers, mocker):
-    mocker.patch.object(github, "_get_edit_url", return_value=False)
+    mocker.patch.object(github, "_get_comment_url", return_value=False)
 
     post_mock = mocker.patch.object(github.requests, "post", side_effect=None)
     patch_mock = mocker.patch.object(github.requests, "patch", side_effect=None)
@@ -127,7 +127,7 @@ def test_write_quality_create_no_reports(expected_headers, mocker):
 
 
 def test_write_summary_deletes_report_previously_created(mocker, expected_headers):
-    mocker.patch.object(github, "_get_edit_url", return_value="delete_url")
+    mocker.patch.object(github, "_get_comment_url", return_value="delete_url")
     delete_mock = mocker.patch.object(github.requests, "delete", side_effect=None)
 
     github.write_quality_summary("url", False, False, None, None)
