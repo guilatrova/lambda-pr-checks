@@ -1,3 +1,4 @@
+import logging
 import os
 
 import requests
@@ -6,6 +7,9 @@ try:
     import summary_factory
 except ModuleNotFoundError:  # For tests
     from . import summary_factory
+
+
+logger = logging.getLogger()
 
 
 class GitHubException(Exception):
@@ -73,16 +77,25 @@ def write_standard_summary(url, analyzed):
 def write_quality_summary(url, cov_report, quality_report, cov_footer, quality_footer):
     headers = _get_gh_headers()
 
-    cov_summary = summary_factory.create_coverage_summary(cov_report, cov_footer)
-    quality_summary = summary_factory.create_quality_summary(
-        quality_report, quality_footer
-    )
+    if cov_report or quality_report:
+        cov_summary = summary_factory.create_coverage_summary(cov_report, cov_footer)
+        quality_summary = summary_factory.create_quality_summary(
+            quality_report, quality_footer
+        )
 
-    # TODO: What if both reports are empty?
-    body = {"body": f"{cov_summary}\n{quality_summary}"}
+        body = {"body": f"{cov_summary}\n{quality_summary}"}
 
-    edit_url = _get_edit_url(url, "Coverage Diff", "Quality Diff")
-    if edit_url:
-        return requests.patch(edit_url, json=body, headers=headers)
+        edit_url = _get_edit_url(url, "Coverage Diff", "Quality Diff")
+        if edit_url:
+            return requests.patch(edit_url, json=body, headers=headers)
+        else:
+            return requests.post(url, json=body, headers=headers)
     else:
-        return requests.post(url, json=body, headers=headers)
+        logger.info(
+            "No report provided, so no summary to write."
+            + "Let's check if we need to delete something."
+        )
+        delete_url = _get_edit_url(url, "Coverage Diff", "Quality Diff")
+
+        if delete_url:
+            return requests.delete(delete_url, headers=headers)
