@@ -200,7 +200,7 @@ def ci_handler(event, context):
 
     if cievent["pr_link"]:
         # Expected format: https://github.com/:owner/:repo/pull/:number
-        summary_url, statuses_url = _get_pr_urls(cievent["pr_link"])
+        summary_url, statuses_url = _get_pr_urls(cievent["pr_link"], commit_sha)
         footers = _get_footers(
             cievent["owner"], cievent["project"], cievent["build_num"]
         )
