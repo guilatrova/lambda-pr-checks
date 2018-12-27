@@ -19,6 +19,10 @@ Parameters:
             The username assigned for the GitHubToken user (e.g. guilatrova).
             It's used to double check when a summary should be whether edited or deleted.
 
+    CircleCIToken:
+        Type: String
+        Description: Token used to get artifacts links from a specific build
+
 Globals:
     Function:
         Timeout: 10
@@ -116,6 +120,7 @@ Resources:
             Environment:
                 Variables:
                     BUCKET_NAME: !Ref QualityReportsBucket
+                    CIRCLECI_TOKEN: !Ref CircleCIToken
             Events:
                 Webhook:
                     Type: Api
@@ -137,6 +142,9 @@ Resources:
             Policies:
                 - DynamoDBReadPolicy:
                     TableName: !Ref QualityReportsTable
+            Environment:
+                Variables:
+                    CIRCLECI_TOKEN: !Ref CircleCIToken
             Events:
                 Webhook:
                     Type: Api
