@@ -103,11 +103,3 @@ def event_creator():
         }
 
     return _generator
-
-
-@pytest.fixture
-def valid_commits():
-    return [
-        {"sha": "123", "commit": {"message": "NO-TICKET Changed"}},
-        {"sha": "456", "commit": {"message": "FY-1234 Do work"}},
-    ]

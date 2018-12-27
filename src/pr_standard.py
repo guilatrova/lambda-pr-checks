@@ -14,7 +14,8 @@ logger = logging.getLogger()
 SUCCESS_MESSAGE = "Your PR is ok!"
 PR_TITLE_FAILURE_MESSAGE = "Your PR title should start with NO-TICKET or a ticket id"
 PR_COMMITS_FAILURE_MESSAGE = "Your PR has some commits with invalid format"
-ALLOWED =
+CHECK_TITLE = "FineTune Standard"
+ALLOWED_COMMITS = ["[shepherd]", "Merge"]
 
 OK_RESPONSE = {
     "statusCode": 200,
@@ -29,58 +30,68 @@ def _validate_title(title):
 
 def _validate_commits(pull_request):
     commits = github.get_commits(pull_request["commits_url"])
-    result = True
     analyzed = []
 
     for commit_wrapper in commits:
-        commit_obj = commit_wrapper["commit"]
         commit = {
             "sha": commit_wrapper["sha"],
-            "message": commit_obj["message"],
-            "standard": True,
+            "message": commit_wrapper["commit"]["message"],
         }
 
-        if not commit["message"].lower().startswith("merge") and not _validate_title(
-            commit["message"]
-        ):
-            result = False
-            commit["standard"] = False
+        if not _validate_title(commit["message"]):
+            standard = any(
+                commit["message"].startswith(allowed) for allowed in ALLOWED_COMMITS
+            )
+        else:
+            standard = True
 
+        commit["standard"] = standard
         analyzed.append(commit)
 
-    return result, analyzed
+    result = all(commit["standard"] for commit in analyzed)
+    return analyzed, result
 
 
 def _validate_pr(pull_request):
-    if _validate_title(pull_request["title"]):
-        valid_commits, commits_analyzed = _validate_commits(pull_request)
+    title_valid = _validate_title(pull_request["title"])
+    commits, all_commits_ok = _validate_commits(pull_request)
 
-        if valid_commits:
-            return True, SUCCESS_MESSAGE, commits_analyzed
-        else:
-            return False, PR_COMMITS_FAILURE_MESSAGE, commits_analyzed
+    report = {
+        "title": {"message": pull_request["title"], "standard": title_valid},
+        "commits": commits,
+    }
+
+    if not title_valid:
+        result = False
+        reason = PR_TITLE_FAILURE_MESSAGE
+    elif not all_commits_ok:
+        result = False
+        reason = PR_COMMITS_FAILURE_MESSAGE
     else:
-        return False, PR_TITLE_FAILURE_MESSAGE, []
+        result = True
+        reason = SUCCESS_MESSAGE
+
+    result = title_valid and all_commits_ok
+    return report, result, reason
 
 
 @error_handler.wrapper_for("github")
 def handler(event, context):
-    logger.info("Handler start")
     ghevent = json.loads(event.get("body"))
     status_url = ghevent["pull_request"]["statuses_url"]
 
-    valid_pr, reason, commits_analyzed = _validate_pr(ghevent["pull_request"])
-    status = "success" if valid_pr else "failure"
-    logger.info("Updating PR status: " + status)
+    report, result, reason = _validate_pr(ghevent["pull_request"])
 
-    github.update_pr_status(status_url, status, "PR standard", reason)
-    logger.info("PR status updated")
+    status = "success" if result else "failure"
+    logger.info(f"Updating PR status to {status} due {reason}")
 
-    if not valid_pr and len(commits_analyzed) > 0:
-        logger.info("Invalid commits found - Writing summary")
-        github.write_standard_summary(
-            ghevent["pull_request"]["comments_url"], commits_analyzed
-        )
-        logger.info("Summary written")
+    github.update_pr_status(status_url, status, CHECK_TITLE, reason)
+
+    # if not valid_pr and len(commits_analyzed) > 0:
+    #     logger.info("Invalid commits found - Writing summary")
+    #     github.write_standard_summary(
+    #         ghevent["pull_request"]["comments_url"], commits_analyzed
+    #     )
+    #     logger.info("Summary written")
 
     return OK_RESPONSE
