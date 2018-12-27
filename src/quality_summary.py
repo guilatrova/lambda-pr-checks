@@ -2,17 +2,13 @@ import json
 import re
 
 try:
-    import circleci
-    import dynamodb
+    from thirdparties import circleci, github
+    from aws import dynamodb, s3
     import error_handler
-    import github
-    import s3
 except ModuleNotFoundError:  # For tests
-    from . import circleci
-    from . import dynamodb
+    from .thirdparties import circleci, github
+    from .aws import dynamodb, s3
     from . import error_handler
-    from . import github
-    from . import s3
 
 COV_EMPTY_TEXT = "No lines with coverage information in this diff."
 COV_REPORT_FOOTER = "See details in the [**coverage report**](#COV_LINK#)."

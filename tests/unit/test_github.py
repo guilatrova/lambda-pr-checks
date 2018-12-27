@@ -3,7 +3,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src import github, quality_summary
+from src import quality_summary
+from src.thirdparties import github
 
 
 @pytest.fixture()

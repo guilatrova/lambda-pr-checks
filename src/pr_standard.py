@@ -3,10 +3,10 @@ import logging
 import re
 
 try:
-    import github
+    from thirdparties import github
     import error_handler
 except ModuleNotFoundError:  # For tests
-    from . import github
+    from .thirdparties import github
     from . import error_handler
 
 logger = logging.getLogger()

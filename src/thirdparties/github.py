@@ -4,7 +4,7 @@ import os
 import requests
 
 try:
-    import summary_factory
+    from thirdparties import summary_factory
 except ModuleNotFoundError:  # For tests
     from . import summary_factory
 

@@ -1,6 +1,7 @@
 import os
 
-from src import quality_summary, summary_factory
+from src import quality_summary
+from src.thirdparties import summary_factory
 
 
 def test_create_standard_summary(mocker):

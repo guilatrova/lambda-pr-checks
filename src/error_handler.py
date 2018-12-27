@@ -4,9 +4,9 @@ import sys
 import traceback
 
 try:
-    import github
+    from thirdparties import github
 except ModuleNotFoundError:
-    from . import github  # For tests
+    from .thirdparties import github  # For tests
 
 logger = logging.getLogger()
 

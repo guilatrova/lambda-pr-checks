@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from src import dynamodb
+from src.aws import dynamodb
 
 
 def test_get_empty_code_freeze_config(mocker):

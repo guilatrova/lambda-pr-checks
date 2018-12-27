@@ -4,12 +4,12 @@ import os
 from urllib.parse import parse_qs
 
 try:
-    import github
-    import dynamodb
+    from thirdparties import github
+    from aws import dynamodb
     import error_handler
 except ModuleNotFoundError:  # For tests
-    from . import github
-    from . import dynamodb
+    from .thirdparties import github
+    from .aws import dynamodb
     from . import error_handler
 
 OK_RESPONSE = {"statusCode": 200, "headers": {"Content-Type": "application/json"}}
