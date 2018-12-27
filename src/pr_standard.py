@@ -53,6 +53,24 @@ def _validate_commits(pull_request):
 
 
 def _validate_pr(pull_request):
+    """
+    Returns a tuple with report, result, reason
+
+    report: A dict in the following format
+        title:
+            message: string
+            standard: bool
+        commits:
+            [
+                {
+                    sha: string
+                    message: string
+                    standard: bool
+                },
+            ]
+    result: Whether it's valid
+    reason: Why did it succeed or failed
+    """
     title_valid = _validate_title(pull_request["title"])
     commits, all_commits_ok = _validate_commits(pull_request)
 
@@ -81,17 +99,12 @@ def handler(event, context):
     status_url = ghevent["pull_request"]["statuses_url"]
 
     report, result, reason = _validate_pr(ghevent["pull_request"])
-
     status = "success" if result else "failure"
-    logger.info(f"Updating PR status to {status} due {reason}")
 
+    logger.info(f"Updating PR status to {status} due {reason}")
     github.update_pr_status(status_url, status, CHECK_TITLE, reason)
 
-    # if not valid_pr and len(commits_analyzed) > 0:
-    #     logger.info("Invalid commits found - Writing summary")
-    #     github.write_standard_summary(
-    #         ghevent["pull_request"]["comments_url"], commits_analyzed
-    #     )
-    #     logger.info("Summary written")
+    logger.info(f"Writing PR summary for report: {report}")
+    github.write_standard_summary(ghevent["pull_request"]["comments_url"], report)
 
     return OK_RESPONSE

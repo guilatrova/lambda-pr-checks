@@ -67,9 +67,9 @@ def get_open_prs(repo):
     return response.json()
 
 
-def write_standard_summary(url, analyzed):
+def write_standard_summary(url, report):
     headers = _get_gh_headers()
-    body = {"body": summary_factory.create_standard_summary(analyzed)}
+    body = {"body": summary_factory.create_standard_summary(report)}
 
     return requests.post(url, json=body, headers=headers)
 

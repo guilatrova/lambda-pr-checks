@@ -1,11 +1,13 @@
 import os
 
 STANDARD_SUMMARY = """
-Some patterns errors were found:
+## Guidelines Report
 
 ```diff
-Commits
-=============
+@@         FineTune Guidelines        @@
+========================================
++ Item    Message
+========================================
 #PLACEHOLDER#
 ```
 
@@ -108,13 +110,24 @@ def create_quality_summary(report, footer):
     return ""
 
 
-def create_standard_summary(commits):
+def create_standard_summary(report):
     content = []
-    for commit in commits:
-        standard = "+" if commit["standard"] else "-"
+
+    def get_sign(standard):
+        return "+" if standard else "-"
+
+    # Title
+    title_sign = get_sign(report["title"]["standard"])
+    title_message = report["title"]["message"]
+    first_line = f"{title_sign} TITLE   {title_message}"
+    content.append(first_line)
+
+    # Commits
+    for commit in report["commits"]:
+        sign = get_sign(commit["standard"])
         sha = commit["sha"][:7]
         message = commit["message"]
-        content.append(f"{standard} {sha} {message}")
+        content.append(f"{sign} {sha} {message}")
 
     joined = "\n".join(content)
 

@@ -5,18 +5,27 @@ from src import quality_summary, summary_factory
 
 def test_create_standard_summary(mocker):
     mocker.patch.dict(os.environ, {"DOCS_STANDARD_LINK": "companystandard.com"})
+    title = {"standard": False, "message": "Title Message"}
     commits = [
         {"standard": True, "sha": "123456789", "message": "Message"},
         {"standard": False, "sha": "123456789", "message": "Message 2"},
     ]
 
-    actual = summary_factory.create_standard_summary(commits)
-    assert "diff" in actual
-    assert "+ 1234567 Message\n" in actual
-    assert "- 1234567 Message 2\n" in actual
-    assert "[docs](companystandard.com)" in actual
-    assert "#PLACEHOLDER#" not in actual
-    assert "#DOCS#" not in actual
+    result = summary_factory.create_standard_summary(
+        {"title": title, "commits": commits}
+    )
+
+    assert "## Guidelines Report" in result
+    assert "diff" in result
+    assert "\n@@         FineTune Guidelines        @@" in result
+    assert "\n- TITLE   Title Message" in result
+    assert "\n+ 1234567 Message" in result
+    assert "\n- 1234567 Message 2\n" in result
+    assert "[docs](companystandard.com)" in result
+
+    # Making sure this was wiped out
+    assert "#PLACEHOLDER#" not in result
+    assert "#DOCS#" not in result
 
 
 def test_create_coverage_summary(mocker, covdiff_content):
