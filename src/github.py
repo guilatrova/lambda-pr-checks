@@ -29,7 +29,10 @@ def _get_gh_headers():
 
 def _get_comment_url(url, *args):
     """
-    Try to retrieve comment_url by looking for any args inside text body
+    Try to retrieve comment_url by looking for any args inside text body.
+
+    It also makes sure the owner of that comment has the same username set
+    in env var GITHUB_USER, to avoid mistakes.
     """
     headers = _get_gh_headers()
     USER = os.environ.get("GITHUB_USER")
@@ -42,7 +45,7 @@ def _get_comment_url(url, *args):
             if comment["user"]["login"] == USER:
                 return comment["url"]
 
-    # Not comment to edit, it should be created
+    # No comment to edit, it should be created
     return False
 
 
@@ -70,6 +73,10 @@ def get_open_prs(repo):
 def write_standard_summary(url, report):
     headers = _get_gh_headers()
     body = {"body": summary_factory.create_standard_summary(report)}
+
+    edit_url = _get_comment_url(url, "Guidelines Report")
+    if edit_url:
+        return requests.patch(edit_url, json=body, headers=headers)
 
     return requests.post(url, json=body, headers=headers)
 

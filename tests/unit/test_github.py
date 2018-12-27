@@ -41,7 +41,6 @@ def test_update_pr_status(expected_headers, mocker):
 
 
 def test_get_commits(expected_headers, mocker):
-    mocker.patch.dict(os.environ, {"GITHUB_TOKEN": "123456"})
     request = mocker.patch.object(github.requests, "get", return_value=MagicMock())
 
     github.get_commits("url")
@@ -49,17 +48,35 @@ def test_get_commits(expected_headers, mocker):
     request.assert_called_once_with("url", headers=expected_headers)
 
 
-def test_write_standard_summary(expected_headers, mocker):
-    mocker.patch.dict(os.environ, {"GITHUB_TOKEN": "123456"})
+def test_create_standard_summary(expected_headers, mocker):
+    mocker.patch.object(github, "_get_comment_url", return_value=False)
     mocker.patch.object(
         github.summary_factory, "create_standard_summary", return_value="content"
     )
-    request = mocker.patch.object(github.requests, "post", return_value=MagicMock())
+    post_mock = mocker.patch.object(github.requests, "post", return_value=MagicMock())
+    patch_mock = mocker.patch.object(github.requests, "patch", return_value=MagicMock())
 
     github.write_standard_summary("url", [])
 
-    request.assert_called_once_with(
+    assert patch_mock.called is False
+    post_mock.assert_called_once_with(
         "url", json={"body": "content"}, headers=expected_headers
+    )
+
+
+def test_edit_standard_summary(expected_headers, mocker):
+    mocker.patch.object(github, "_get_comment_url", return_value="edit_url")
+    mocker.patch.object(
+        github.summary_factory, "create_standard_summary", return_value="content"
+    )
+    post_mock = mocker.patch.object(github.requests, "post", return_value=MagicMock())
+    patch_mock = mocker.patch.object(github.requests, "patch", return_value=MagicMock())
+
+    github.write_standard_summary("url", [])
+
+    assert post_mock.called is False
+    patch_mock.assert_called_once_with(
+        "edit_url", json={"body": "content"}, headers=expected_headers
     )
 
 
