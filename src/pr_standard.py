@@ -10,14 +10,11 @@ except ModuleNotFoundError:  # For tests
     from . import error_handler
 
 logger = logging.getLogger()
-if logger.handlers:
-    for handler in logger.handlers:
-        logger.removeHandler(handler)
-logging.basicConfig(level=logging.INFO)
 
 SUCCESS_MESSAGE = "Your PR is ok!"
 PR_TITLE_FAILURE_MESSAGE = "Your PR title should start with NO-TICKET or a ticket id"
 PR_COMMITS_FAILURE_MESSAGE = "Your PR has some commits with invalid format"
+ALLOWED =
 
 OK_RESPONSE = {
     "statusCode": 200,

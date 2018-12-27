@@ -9,10 +9,6 @@ except ModuleNotFoundError:
     from . import github  # For tests
 
 logger = logging.getLogger()
-if logger.handlers:
-    for handler in logger.handlers:
-        logger.removeHandler(handler)
-logging.basicConfig(level=logging.INFO)
 
 GH_FAIL_RESPONSE = {"statusCode": 500, "headers": {"Content-Type": "application/json"}}
 SLACK_FAIL_RESPONSE = {
