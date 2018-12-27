@@ -1,9 +1,23 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-    sam-app
+    SAM with PR validation collection
+    1. Standard Check
+    2. CodeFreeze w/ GitHub Check + Slack Command
+    3. Quality Check w/ GitHub Check + CircleCI WebHook
 
-    Sample SAM Template for sam-app
+Parameters:
+    GitHubToken:
+        Type: String
+        Description: >
+            Token used to update PR status and write comments (aka summaries).
+            Token provided should have permissions for repo and write:discussion.
+
+    GitHubUser:
+        Type: String
+        Description: >
+            The username assigned for the GitHubToken user (e.g. guilatrova).
+            It's used to double check when a summary should be whether edited or deleted.
 
 Globals:
     Function:
@@ -11,8 +25,8 @@ Globals:
         Runtime: python3.7
         Environment:
             Variables:
-                GITHUB_TOKEN: 123456
-
+                GITHUB_TOKEN: !Ref GitHubToken
+                GITHUB_USER: !Ref GitHubUser
 
 Resources:
 
@@ -20,10 +34,15 @@ Resources:
     PullRequestStandardCheckFunction:
         Type: AWS::Serverless::Function
         Properties:
+            FunctionName: PullRequest_StandardCheck
+            Description: >
+                Updates status and provides a detailed summary
+                for any changes made to a GitHub PullRequest
+                based on company guidelines.
             CodeUri: src/
             Handler: pr_standard.handler
             Events:
-                HelloWorld:
+                Webhook:
                     Type: Api
                     Properties:
                         Path: /standard
