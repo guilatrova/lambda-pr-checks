@@ -34,7 +34,7 @@ Resources:
     PullRequestStandardCheckFunction:
         Type: AWS::Serverless::Function
         Properties:
-            FunctionName: PullRequest_StandardCheck
+            FunctionName: StandardCheck_PullRequest
             Description: >
                 Updates status and provides a detailed summary
                 for any changes made to a GitHub PullRequest
@@ -52,15 +52,19 @@ Resources:
     CodeFreezerSlashFunction:
         Type: AWS::Serverless::Function
         Properties:
+            FunctionName: CodeFreeze_SlashFunction
+            Description: Handles commands sent from Slack (e.g. enable code freeze).
             CodeUri: src/
             Handler: codefreezer.slack_handler
-            Policies: AmazonDynamoDBFullAccess
+            Policies:
+                - DynamoDBCrudPolicy:
+                    TableName: !Ref CodeFreezeConfigTable
             Environment:
                 Variables:
-                    REPOS: guilatrova/Github-Lambda-Status-Checks
-                    AUTHORIZED: Guilherme
+                    REPOS: guilatrova/Github-Lambda-Status-Checks # Multiple repos should be separated by a comma
+                    AUTHORIZED: Guilherme # The slack username. Multiple usernames should be separed by a comma
             Events:
-                Api:
+                Webhook:
                     Type: Api
                     Properties:
                         Path: /codefreeze
@@ -69,35 +73,39 @@ Resources:
     PullRequestCodeFreezeCheckFunction:
         Type: AWS::Serverless::Function
         Properties:
+            FunctionName: CodeFreezeCheck_PullRequest
+            Description: >
+                Updates status for any changes made to a GitHub PullRequest (e.g. open a PR or update commits),
+                based on Code Freeze status (enabled/disabled).
             CodeUri: src/
             Handler: codefreezer.gh_handler
-            Policies: AmazonDynamoDBReadOnlyAccess
+            Policies:
+                - DynamoDBReadPolicy:
+                    TableName: !Ref CodeFreezeConfigTable
             Events:
-                Api:
+                Webhook:
                     Type: Api
                     Properties:
                         Path: /codefreeze-status
                         Method: post
 
-    ConfigTable:
+    CodeFreezeConfigTable:
         Type: AWS::Serverless::SimpleTable
         Properties:
-            TableName: "CodeFreezeConfig"
+            TableName: CodeFreezeConfig
             PrimaryKey:
                 Name: ConfigName
                 Type: String
-            ProvisionedThroughput:
-                ReadCapacityUnits: 5
-                WriteCapacityUnits: 5
 
     # Quality Reports (CI + Pull Request)
     CIReportsFunction:
         Type: AWS::Serverless::Function
-        Description: >
-            Function to be invoked by CircleCI after reports were uploaded to S3.
-            This function reads those reports, saves to DynamoDB, and then
-            IF a PR is open, provide a status validation for Coverage and Quality.
         Properties:
+            FunctionName: QualityCheck_CI_Reports
+            Description: >
+                Function to be invoked by CircleCI after reports were uploaded to S3.
+                This function reads those reports, saves to DynamoDB, and then
+                IF a PR is open, provide a status validation for Coverage and Quality.
             CodeUri: src/
             Handler: quality_summary.ci_handler
             Policies:
@@ -107,10 +115,9 @@ Resources:
                     BucketName: !Ref QualityReportsBucket
             Environment:
                 Variables:
-                    TABLE_NAME: !Ref QualityReportsTable
                     BUCKET_NAME: !Ref QualityReportsBucket
             Events:
-                Api:
+                Webhook:
                     Type: Api
                     Properties:
                         Path: /ci-results
@@ -118,18 +125,20 @@ Resources:
 
     PullRequestQualityCheckFunction:
         Type: AWS::Serverless::Function
-        Description: >
-            Function to be invoked by GitHub when a PR is updated.
-            This function reads reports saved previously in DynamoDB, and then
-            IF any report is available, provide a status validation for Coverage and Quality.
         Properties:
+            FunctionName: QualityCheck_PullRequest
+            Description: >
+                Updates status and provides a detailed summary
+                for any changes made to a GitHub PullRequest (e.g. new commits added)
+                regarding Coverage and Quality.
+                This function reads reports saved previously in DynamoDB.
             CodeUri: src/
             Handler: codefreezer.gh_handler
             Policies:
                 - DynamoDBReadPolicy:
                     TableName: !Ref QualityReportsTable
             Events:
-                Api:
+                Webhook:
                     Type: Api
                     Properties:
                         Path: /quality-status
@@ -137,7 +146,6 @@ Resources:
 
     QualityReportsTable:
         Type: AWS::Serverless::SimpleTable
-        Description: Table used to store processed reports, project and build info.
         Properties:
             TableName: QualityReports
             PrimaryKey:
@@ -146,6 +154,5 @@ Resources:
 
     QualityReportsBucket:
         Type: AWS::S3::Bucket
-        Description: Bucket used to store raw reports generated by CircleCI.
         Properties:
             BucketName: ci-quality-reports
