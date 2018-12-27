@@ -98,107 +98,80 @@ def test_validate_pr_invalid_commits(mocker):
     assert report["commits"] == commits
 
 
-# def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
-#     event = event_creator(incoming_open_pr_payload)
-#     github_payload = json.loads(event["body"])
-#     update_pr_status_mock = mocker.patch.object(
-#         pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
-#     )
-#     mocker.patch.object(pr_standard, "_validate_title", return_value=True)
-#     mocker.patch.object(pr_standard, "_validate_commits", return_value=(True, []))
-#     error_summary_mock = mocker.patch.object(
-#         pr_standard.github, "write_standard_summary", return_value=MagicMock()
-#     )
+def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
+    event = event_creator(incoming_open_pr_payload)
+    github_payload = json.loads(event["body"])
 
-#     response = pr_standard.handler(event, "")
+    report = {}
+    update_pr_status_mock = mocker.patch.object(
+        pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
+    )
+    summary_mock = mocker.patch.object(
+        pr_standard.github, "write_standard_summary", return_value=MagicMock()
+    )
+    mocker.patch.object(
+        pr_standard, "_validate_pr", return_value=(report, True, "reason")
+    )
 
-#     update_pr_status_mock.assert_called_once_with(
-#         github_payload["pull_request"]["statuses_url"],
-#         "success",
-#         "PR standard",
-#         pr_standard.SUCCESS_MESSAGE,
-#     )
+    response = pr_standard.handler(event, None)
 
-#     assert response == pr_standard.OK_RESPONSE
-#     assert error_summary_mock.called is False
+    update_pr_status_mock.assert_called_once_with(
+        github_payload["pull_request"]["statuses_url"],
+        "success",
+        pr_standard.CHECK_TITLE,
+        "reason",
+    )
+    summary_mock.assert_called_once_with(
+        github_payload["pull_request"]["comments_url"], report
+    )
 
-
-# def test_lambda_handler_invalid_pr_title(
-#     event_creator, incoming_open_pr_payload, mocker
-# ):
-#     event = event_creator(incoming_open_pr_payload)
-#     github_payload = json.loads(event["body"])
-#     update_pr_status_mock = mocker.patch.object(
-#         pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
-#     )
-#     mocker.patch.object(pr_standard, "_validate_title", return_value=False)
-#     error_summary_mock = mocker.patch.object(
-#         pr_standard.github, "write_standard_summary", return_value=MagicMock()
-#     )
-
-#     response = pr_standard.handler(event, "")
-
-#     update_pr_status_mock.assert_called_once_with(
-#         github_payload["pull_request"]["statuses_url"],
-#         "failure",
-#         "PR standard",
-#         pr_standard.PR_TITLE_FAILURE_MESSAGE,
-#     )
-
-#     assert response == pr_standard.OK_RESPONSE
-#     assert error_summary_mock.called is False
+    assert response == pr_standard.OK_RESPONSE
 
 
-# def test_lambda_handler_invalid_commits(
-#     event_creator, incoming_open_pr_payload, mocker
-# ):
-#     event = event_creator(incoming_open_pr_payload)
-#     github_payload = json.loads(event["body"])
-#     commits_analyzed = [{}, {}]
+def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mocker):
+    event = event_creator(incoming_open_pr_payload)
+    github_payload = json.loads(event["body"])
 
-#     update_pr_status_mock = mocker.patch.object(
-#         pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
-#     )
-#     mocker.patch.object(
-#         pr_standard,
-#         "_validate_pr",
-#         return_value=(False, pr_standard.PR_COMMITS_FAILURE_MESSAGE, commits_analyzed),
-#     )
-#     error_summary_mock = mocker.patch.object(
-#         pr_standard.github, "write_standard_summary", return_value=MagicMock()
-#     )
+    report = {}
+    update_pr_status_mock = mocker.patch.object(
+        pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
+    )
+    summary_mock = mocker.patch.object(
+        pr_standard.github, "write_standard_summary", return_value=MagicMock()
+    )
+    mocker.patch.object(
+        pr_standard, "_validate_pr", return_value=(report, False, "reason")
+    )
 
-#     response = pr_standard.handler(event, "")
+    response = pr_standard.handler(event, None)
 
-#     update_pr_status_mock.assert_called_once_with(
-#         github_payload["pull_request"]["statuses_url"],
-#         "failure",
-#         "PR standard",
-#         pr_standard.PR_COMMITS_FAILURE_MESSAGE,
-#     )
+    update_pr_status_mock.assert_called_once_with(
+        github_payload["pull_request"]["statuses_url"],
+        "failure",
+        pr_standard.CHECK_TITLE,
+        "reason",
+    )
+    summary_mock.assert_called_once_with(
+        github_payload["pull_request"]["comments_url"], report
+    )
 
-#     error_summary_mock.assert_called_once_with(
-#         github_payload["pull_request"]["comments_url"], commits_analyzed
-#     )
-
-#     assert response == pr_standard.OK_RESPONSE
+    assert response == pr_standard.OK_RESPONSE
 
 
-# def test_lambda_handler_handles_exception(
-#     event_creator, incoming_open_pr_payload, mocker
-# ):
-#     event = event_creator(incoming_open_pr_payload)
+def test_lambda_handler_handles_exception(
+    event_creator, incoming_open_pr_payload, mocker
+):
+    event = event_creator(incoming_open_pr_payload)
 
-#     mocker.patch.object(pr_standard, "_validate_title", return_value=True)
-#     mocker.patch.object(pr_standard, "_validate_commits", return_value=(True, []))
-#     mocker.patch.object(
-#         pr_standard.github,
-#         "update_pr_status",
-#         side_effect=pr_standard.github.GitHubException("www.site.com", "text"),
-#     )
+    mocker.patch.object(pr_standard, "_validate_pr", return_value=({}, True, "reason"))
+    mocker.patch.object(
+        pr_standard.github,
+        "update_pr_status",
+        side_effect=pr_standard.github.GitHubException("www.site.com", "text"),
+    )
 
-#     response = pr_standard.handler(event, "")
+    response = pr_standard.handler(event, "")
 
-#     assert response["statusCode"] == error_handler.GH_FAIL_RESPONSE["statusCode"]
-#     assert response["headers"] == error_handler.GH_FAIL_RESPONSE["headers"]
-#     assert "body" in response
+    assert response["statusCode"] == error_handler.GH_FAIL_RESPONSE["statusCode"]
+    assert response["headers"] == error_handler.GH_FAIL_RESPONSE["headers"]
+    assert "body" in response
