@@ -67,7 +67,7 @@ def test_validate_pr_success(mocker):
     report, result, reason = pr_standard._validate_pr({"title": "title"})
 
     assert result is True
-    assert reason == pr_standard.SUCCESS_MESSAGE
+    assert reason == pr_standard.SUCCESS_REASON
     assert report["title"] == {"message": "title", "standard": True}
     assert report["commits"] == commits
 
@@ -80,7 +80,7 @@ def test_validate_pr_invalid_title(mocker):
     report, result, reason = pr_standard._validate_pr({"title": "title"})
 
     assert result is False
-    assert reason == pr_standard.PR_TITLE_FAILURE_MESSAGE
+    assert reason == pr_standard.TITLE_FAILURE_REASON
     assert report["title"] == {"message": "title", "standard": False}
     assert report["commits"] == commits
 
@@ -93,7 +93,7 @@ def test_validate_pr_invalid_commits(mocker):
     report, result, reason = pr_standard._validate_pr({"title": "title"})
 
     assert result is False
-    assert reason == pr_standard.PR_COMMITS_FAILURE_MESSAGE
+    assert reason == pr_standard.COMMITS_FAILURE_REASON
     assert report["title"] == {"message": "title", "standard": True}
     assert report["commits"] == commits
 

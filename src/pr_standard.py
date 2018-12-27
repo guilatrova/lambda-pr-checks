@@ -11,11 +11,12 @@ except ModuleNotFoundError:  # For tests
 
 logger = logging.getLogger()
 
-SUCCESS_MESSAGE = "Your PR is ok!"
-PR_TITLE_FAILURE_MESSAGE = "Your PR title should start with NO-TICKET or a ticket id"
-PR_COMMITS_FAILURE_MESSAGE = "Your PR has some commits with invalid format"
 CHECK_TITLE = "FineTune Standard"
 ALLOWED_COMMITS = ["[shepherd]", "Merge"]
+# reasons
+SUCCESS_REASON = "Your PR is up to standards!"
+TITLE_FAILURE_REASON = "Your PR title is not up to standards"
+COMMITS_FAILURE_REASON = "Your PR has some commits not up to standards"
 
 OK_RESPONSE = {
     "statusCode": 200,
@@ -29,6 +30,20 @@ def _validate_title(title):
 
 
 def _validate_commits(pull_request):
+    """
+    Retrieves all commits in PR and loop them validating every single message.
+
+    Returns a tuple (commits, result) in following format
+        1: commits:
+            [
+                {
+                    sha: string
+                    message: string
+                    standard: bool
+                },
+            ]
+        2: result: Whether ALL commits are up to standard
+    """
     commits = github.get_commits(pull_request["commits_url"])
     analyzed = []
 
@@ -81,13 +96,13 @@ def _validate_pr(pull_request):
 
     if not title_valid:
         result = False
-        reason = PR_TITLE_FAILURE_MESSAGE
+        reason = TITLE_FAILURE_REASON
     elif not all_commits_ok:
         result = False
-        reason = PR_COMMITS_FAILURE_MESSAGE
+        reason = COMMITS_FAILURE_REASON
     else:
         result = True
-        reason = SUCCESS_MESSAGE
+        reason = SUCCESS_REASON
 
     result = title_valid and all_commits_ok
     return report, result, reason
@@ -95,6 +110,11 @@ def _validate_pr(pull_request):
 
 @error_handler.wrapper_for("github")
 def handler(event, context):
+    """
+    Lambda handler expecting a Pull Request event from GitHub.
+    It sends a status update to the PR, and writes a summary
+    with detailed information.
+    """
     ghevent = json.loads(event.get("body"))
     status_url = ghevent["pull_request"]["statuses_url"]
 
