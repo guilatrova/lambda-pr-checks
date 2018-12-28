@@ -39,10 +39,13 @@ def get_error_response(integration, details):
 
 def wrapper_for(integration):
     def _outer_wrapper(func):
-        def _inner_wrapper(*args, **kwargs):
+        def _inner_wrapper(event, *args, **kwargs):
             logging.info("Error handler attached")
+            body = event.get("body")
+            logging.info(f"Incoming payload: {body}")
+
             try:
-                return func(*args, **kwargs)
+                return func(event, *args, **kwargs)
 
             except github.GitHubException as ghex:
                 logging.error("GitHubException catch by wrapper")

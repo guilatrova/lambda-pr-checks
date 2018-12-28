@@ -1,4 +1,8 @@
+import logging
+
 import boto3
+
+logger = logging.getLogger()
 
 # CodeFreeze
 CODE_FREEZE_TABLE = "CodeFreezeConfig"
@@ -38,6 +42,7 @@ def get_code_freeze_config():
 # Quality
 def save_reports(cov_report, quality_report, **kwargs):
     table = _get_table(QUALITY_TABLE)
+    logger.info(f"Saving data to dynamodb {kwargs}")
 
     # Below line is just to be obvious and show the Key, it's not really required
     commit_sha = kwargs.pop("commit_sha")

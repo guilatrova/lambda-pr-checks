@@ -26,6 +26,11 @@ def qualitydiff_content():
 
 
 @pytest.fixture()
+def qualitydiffsingle_content():
+    return _read_payload("qualitydiff_single.txt")
+
+
+@pytest.fixture()
 def covdiff_content():
     return _read_payload("covdiff.txt")
 
@@ -33,6 +38,11 @@ def covdiff_content():
 @pytest.fixture()
 def covdiff_empty_content():
     return _read_payload("covdiff_empty.txt")
+
+
+@pytest.fixture()
+def covdiffsingle_content():
+    return _read_payload("covdiff_single.txt")
 
 
 @pytest.fixture()

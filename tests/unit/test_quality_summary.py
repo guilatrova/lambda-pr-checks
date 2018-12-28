@@ -29,6 +29,17 @@ def test_read_coverage_file(mocker, covdiff_content):
     assert report["coverage"] == "15%"
 
 
+def test_read_coverage_file_single_line(mocker, covdiffsingle_content):
+    mocker.patch.object(
+        quality_summary.s3, "get_coverage_file", return_value=covdiffsingle_content
+    )
+
+    report = quality_summary._read_coverage_file("")
+
+    assert report["total"] == "1"
+    assert report["missing"] == "1"
+
+
 def test_read_coverage_empty_file(mocker, covdiff_empty_content):
     mocker.patch.object(
         quality_summary.s3, "get_coverage_file", return_value=covdiff_empty_content
@@ -71,6 +82,17 @@ def test_read_quality_file(mocker, qualitydiff_content):
     assert report["total"] == "589"
     assert report["violations"] == "5"
     assert report["quality"] == "99%"
+
+
+def test_read_quality_file_single_line(mocker, qualitydiffsingle_content):
+    mocker.patch.object(
+        quality_summary.s3, "get_quality_file", return_value=qualitydiffsingle_content
+    )
+
+    report = quality_summary._read_quality_file("")
+
+    assert report["total"] == "1"
+    assert report["violations"] == "1"
 
 
 def test_read_quality_empty_file(mocker, qualitydiff_empty_content):
@@ -152,7 +174,7 @@ def test_update_github_status_no_report(mocker):
     quality_summary._update_github_status(False, "url", "coverage", 50)
 
     update_status_mock.assert_called_once_with(
-        "url", "success", "FineTune Coverage", "No report provided for this hash"
+        "url", "success", "FineTune Coverage", "No report provided for this commit"
     )
 
 

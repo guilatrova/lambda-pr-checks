@@ -1,0 +1,30 @@
+-------------
+Diff Quality
+Quality Report: flake8
+Diff: origin/dev...HEAD, staged and unstaged changes
+-------------
+example/workers/feedback/models.py (80.0%):
+example/workers/feedback/models.py:3: F401 'sqlalchemy.String' imported but unused
+example/schemas/subjects.py (83.3%):
+example/schemas/subjects.py:141: F705 'return' with argument inside generator
+workflows/handler/worker_actions.py (88.9%):
+workflows/handler/worker_actions.py:23: E999 SyntaxError: invalid syntax
+workflows/handler/worker_queries.py (100%)
+workflows/handler/items.py (100%)
+workflows/handler/submission_queries.py (100%)
+tests/conftest.py (100%)
+tests/test_amerit/schemas/snapshots/snap_test_subjects.py (100%)
+tests/test_amerit/schemas/test_subjects.py (100%)
+tests/test_workflows/test_handler/conftest.py (100%)
+tests/test_workflows/test_handler/test_workers.py (100%)
+tests/test_workflows/test_handler/test_items.py (100%)
+tests/test_content/test_handler/test_content_item.py (95.3%):
+tests/test_content/test_handler/test_content_item.py:4: F401 'workflows.models.workers.Boss' imported but unused
+tests/test_content/test_handler/test_content_item.py:4: F401 'workflows.models.workers.TaskItem' imported but unused
+tests/test_content/test_handler/test_content_item.py:4: F401 'workflows.models.workers.Developer' imported but unused
+tests/test_content/test_handler/test_content_item.py:20: E128 continuation line under-indented for visual indent
+-------------
+Total:   1 line
+Violations: 1 line
+% Quality: 99%
+-------------

@@ -70,8 +70,8 @@ def _read_coverage_file(hash):
     if content and COV_EMPTY_TEXT not in content:
         report = {}
         report["target_branch"] = re.search(r"Diff: (.*)\.\.\.", content).group(1)
-        report["total"] = re.search(r"Total: (.*) lines", content).group(1).strip()
-        report["missing"] = re.search(r"Missing: (.*) lines", content).group(1).strip()
+        report["total"] = re.search(r"Total: (.*) line", content).group(1).strip()
+        report["missing"] = re.search(r"Missing: (.*) line", content).group(1).strip()
         report["coverage"] = re.search(r"Coverage: (.*)", content).group(1).strip()
 
         matches = re.findall(r"(.*) \((.*)\)(.*)", content)
@@ -96,9 +96,9 @@ def _read_quality_file(hash):
     if content and QUALITY_EMPTY_TEXT not in content:
         report = {}
         report["target_branch"] = re.search(r"Diff: (.*)\.\.\.", content).group(1)
-        report["total"] = re.search(r"Total: (.*) lines", content).group(1).strip()
+        report["total"] = re.search(r"Total: (.*) line", content).group(1).strip()
         report["violations"] = (
-            re.search(r"Violations: (.*) lines", content).group(1).strip()
+            re.search(r"Violations: (.*) line", content).group(1).strip()
         )
         report["quality"] = re.search(r"Quality: (.*)", content).group(1).strip()
 
@@ -165,7 +165,7 @@ def _update_github_status(report, url, key, threshold):
             )
     else:
         pr_state = "success"
-        description = "No report provided for this hash"
+        description = "No report provided for this commit"
 
     github.update_pr_status(url, pr_state, f"FineTune {title}", description)
 
@@ -187,6 +187,10 @@ def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, foo
 # Although it's CI, GitHub fail response fits good though
 @error_handler.wrapper_for("github")
 def ci_handler(event, context):
+    """
+    Expects to receive a payload from CircleCI with following info:
+    "commit_sha", "owner", "project", "build_num", "pr_link" (pr_link might be empty).
+    """
     cievent = json.loads(event.get("body"))
     commit_sha = cievent["commit_sha"]
 
