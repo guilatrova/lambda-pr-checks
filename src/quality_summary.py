@@ -76,7 +76,7 @@ def _read_coverage_file(hash):
 
         matches = re.findall(r"(.*) \((.*)\)(.*)", content)
         report["files"] = [
-            {"file": match[0], "value": match[1], "missing": match[2]}
+            {"file": match[0], "value": match[1], "missing": match[2] or False}
             for match in matches
         ]
 

@@ -98,7 +98,7 @@ def write_quality_summary(url, cov_report, quality_report, cov_footer, quality_f
         else:
             return requests.post(url, json=body, headers=headers)
     else:
-        logger.info(
+        print(
             "No report provided, so no summary to write."
             + "Let's check if we need to delete something."
         )

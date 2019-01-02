@@ -39,7 +39,7 @@ def _extract_command(raw):
 
 
 def _has_authorization(username):
-    logger.info("Checking authorization for " + username)
+    print("Checking authorization for " + username)
     # Expected format: username1,username2,username3
     authorized = os.environ.get("AUTHORIZED", "").split(",")
     return username in authorized
@@ -74,7 +74,7 @@ def _freeze(command):
         status = "disabled"
         description = ""
 
-    logger.info("Writing status config to: " + status)
+    print("Writing status config to: " + status)
     dynamodb.write_config(
         dynamodb.FREEZE_CONFIG, Status=status, Author=command["user_name"]
     )
@@ -95,7 +95,7 @@ def _freeze(command):
 @error_handler.wrapper_for("slack")
 def slack_handler(event, context):
     slack_command = _extract_command(event.get("body"))
-    logger.info("Command text: " + slack_command["text"])
+    print("Command text: " + slack_command["text"])
 
     if slack_command["text"] in ["enable", "disable"]:
         freeze_response = _freeze(slack_command)

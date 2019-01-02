@@ -42,21 +42,20 @@ def get_code_freeze_config():
 # Quality
 def save_reports(cov_report, quality_report, **kwargs):
     table = _get_table(QUALITY_TABLE)
-    logger.info(f"Saving data to dynamodb {kwargs}")
 
     # Below line is just to be obvious and show the Key, it's not really required
     commit_sha = kwargs.pop("commit_sha")
-    if not kwargs["pr_link"]:
-        kwargs.pop("pr_link")
+    kwargs.pop("pr_link", False)
+    item = {
+        "commit_sha": commit_sha,
+        "cov_report": cov_report,
+        "quality_report": quality_report,
+        **kwargs,
+    }
 
-    table.put_item(
-        Item={
-            "commit_sha": commit_sha,
-            "cov_report": cov_report,
-            "quality_report": quality_report,
-            **kwargs,
-        }
-    )
+    print(f"Saving data to dynamodb {item}")
+
+    table.put_item(Item=item)
 
 
 def get_report(commit_sha):

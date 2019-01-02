@@ -16,12 +16,16 @@ def test_read_coverage_file(mocker, covdiff_content):
 
     report = quality_summary._read_coverage_file("")
 
-    assert len(report["files"]) == 4
+    assert len(report["files"]) == 5
     assert len(report["files"][0]) == 3
 
     assert report["files"][0]["file"] == "example/models/worker/feedback/models.py"
     assert report["files"][0]["value"] == "60.0%"
     assert report["files"][0]["missing"] == ": Missing lines 24-25"
+
+    assert report["files"][4]["file"] == "tests/full/test_submission.py"
+    assert report["files"][4]["value"] == "100%"
+    assert report["files"][4]["missing"] is False
 
     assert report["target_branch"] == "origin/dev"
     assert report["total"] == "85"

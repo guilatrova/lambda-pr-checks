@@ -121,10 +121,10 @@ def handler(event, context):
     report, result, reason = _validate_pr(ghevent["pull_request"])
     status = "success" if result else "failure"
 
-    logger.info(f"Updating PR status to {status} due {reason}")
+    print(f"Updating PR status to {status} due {reason}")
     github.update_pr_status(status_url, status, CHECK_TITLE, reason)
 
-    logger.info(f"Writing PR summary for report: {report}")
+    print(f"Writing PR summary for report: {report}")
     github.write_standard_summary(ghevent["pull_request"]["comments_url"], report)
 
     return OK_RESPONSE

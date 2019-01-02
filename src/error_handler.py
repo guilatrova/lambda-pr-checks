@@ -40,9 +40,9 @@ def get_error_response(integration, details):
 def wrapper_for(integration):
     def _outer_wrapper(func):
         def _inner_wrapper(event, *args, **kwargs):
-            logging.info("Error handler attached")
+            print("Error handler attached")
             body = event.get("body")
-            logging.info(f"Incoming payload: {body}")
+            print(f"Incoming payload: {body}")
 
             try:
                 return func(event, *args, **kwargs)
