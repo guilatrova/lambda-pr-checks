@@ -229,3 +229,5 @@ def gh_handler(event, context):
         _update_github_pr(
             summary_url, statuses_url, cov_report, quality_report, footers
         )
+
+    return OK_RESPONSE
