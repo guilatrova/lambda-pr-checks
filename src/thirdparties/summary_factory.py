@@ -8,7 +8,9 @@ STANDARD_SUMMARY = """
 ========================================
 + Item    Message
 ========================================
-#PLACEHOLDER#
+#CONTENT_PLACEHOLDER#
+========================================
+#RESUME_PLACEHOLDER#
 ```
 
 Read the [docs](#DOCS#) for more details
@@ -110,7 +112,7 @@ def create_quality_summary(report, footer):
     return ""
 
 
-def create_standard_summary(report):
+def create_standard_summary(report, resume):
     content = []
 
     def get_sign(standard):
@@ -131,7 +133,8 @@ def create_standard_summary(report):
 
     joined = "\n".join(content)
 
-    summary = STANDARD_SUMMARY.replace("#PLACEHOLDER#", joined)
+    summary = STANDARD_SUMMARY.replace("#CONTENT_PLACEHOLDER#", joined)
     summary = summary.replace("#DOCS#", os.environ.get("DOCS_STANDARD_LINK", ""))
+    summary = summary.replace("#RESUME_PLACEHOLDER#", resume)
 
     return summary.strip()

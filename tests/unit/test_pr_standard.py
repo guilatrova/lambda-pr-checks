@@ -122,7 +122,7 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
         "reason",
     )
     summary_mock.assert_called_once_with(
-        github_payload["pull_request"]["comments_url"], report
+        github_payload["pull_request"]["comments_url"], report, "reason"
     )
 
     assert response == pr_standard.OK_RESPONSE
@@ -152,7 +152,7 @@ def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mock
         "reason",
     )
     summary_mock.assert_called_once_with(
-        github_payload["pull_request"]["comments_url"], report
+        github_payload["pull_request"]["comments_url"], report, "reason"
     )
 
     assert response == pr_standard.OK_RESPONSE

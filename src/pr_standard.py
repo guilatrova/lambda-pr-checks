@@ -70,21 +70,20 @@ def _validate_commits(pull_request):
 def _validate_pr(pull_request):
     """
     Returns a tuple with report, result, reason
-
-    report: A dict in the following format
-        title:
-            message: string
-            standard: bool
-        commits:
-            [
-                {
-                    sha: string
-                    message: string
-                    standard: bool
-                },
-            ]
-    result: Whether it's valid
-    reason: Why did it succeed or failed
+        report: A dict in the following format
+            title:
+                message: string
+                standard: bool
+            commits:
+                [
+                    {
+                        sha: string
+                        message: string
+                        standard: bool
+                    },
+                ]
+        result: Whether it's valid
+        reason: Why did it succeed or failed
     """
     title_valid = _validate_title(pull_request["title"])
     commits, all_commits_ok = _validate_commits(pull_request)
@@ -104,7 +103,6 @@ def _validate_pr(pull_request):
         result = True
         reason = SUCCESS_REASON
 
-    result = title_valid and all_commits_ok
     return report, result, reason
 
 
@@ -125,6 +123,8 @@ def handler(event, context):
     github.update_pr_status(status_url, status, CHECK_TITLE, reason)
 
     print(f"Writing PR summary for report: {report}")
-    github.write_standard_summary(ghevent["pull_request"]["comments_url"], report)
+    github.write_standard_summary(
+        ghevent["pull_request"]["comments_url"], report, reason
+    )
 
     return OK_RESPONSE

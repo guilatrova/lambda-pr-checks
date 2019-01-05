@@ -13,7 +13,7 @@ def test_create_standard_summary(mocker):
     ]
 
     result = summary_factory.create_standard_summary(
-        {"title": title, "commits": commits}
+        {"title": title, "commits": commits}, "GIVEN_REASON"
     )
 
     assert "## Guidelines Report" in result
@@ -23,9 +23,11 @@ def test_create_standard_summary(mocker):
     assert "\n+ 1234567 Message" in result
     assert "\n- 1234567 Message 2\n" in result
     assert "[docs](companystandard.com)" in result
+    assert "GIVEN_REASON" in result
 
     # Making sure this was wiped out
-    assert "#PLACEHOLDER#" not in result
+    assert "#CONTENT_PLACEHOLDER#" not in result
+    assert "#RESUME_PLACEHOLDER#" not in result
     assert "#DOCS#" not in result
 
 
