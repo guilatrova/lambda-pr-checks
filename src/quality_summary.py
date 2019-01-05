@@ -25,11 +25,11 @@ OK_RESPONSE = {
 }
 
 
-def _get_footers(owner, project, build_num):
+def _get_footers(owner, project, build_num, repo_id):
     """
     Returns two footers to be appended to summaries
     """
-    report_links = _get_reports_link(owner, project, build_num)
+    report_links = _get_reports_link(owner, project, build_num, repo_id)
 
     return {
         "quality": QUALITY_REPORT_FOOTER.replace(
@@ -41,21 +41,20 @@ def _get_footers(owner, project, build_num):
     }
 
 
-def _get_reports_link(owner, project, build_num):
+def _get_reports_link(owner, project, build_num, repo_id):
     """
     Returns artifacts links from CircleCI
     """
-    artifacts = circleci.get_artifacts_from_build(owner, project, build_num)
-    print(f"Retrieven artifacts: {artifacts}")
     reports = {
-        "coverage": {"name": "coverage.html", "url": ""},
-        "flake8": {"name": "flake8.html", "url": ""},
+        "coverage": {
+            "name": "coverage.html",
+            "url": f"https://{build_num}-{repo_id}-gh.circle-artifacts.com/0/quality-reports/coverage.html",
+        },
+        "flake8": {
+            "name": "flake8.html",
+            "url": f"https://{build_num}-{repo_id}-gh.circle-artifacts.com/0/quality-reports/flake8.html",
+        },
     }
-
-    for artifact in artifacts:
-        for key in reports.keys():
-            if artifact["path"].endswith(reports[key]["name"]):
-                reports[key]["url"] = artifact["url"]
 
     return reports
 
@@ -201,9 +200,10 @@ def ci_handler(event, context):
 
     if cievent["pr_link"]:
         # Expected format: https://github.com/:owner/:repo/pull/:number
+        repo_id = github.get_repo_id(cievent["owner"], cievent["project"])
         summary_url, statuses_url = _get_pr_urls(cievent["pr_link"], commit_sha)
         footers = _get_footers(
-            cievent["owner"], cievent["project"], cievent["build_num"]
+            cievent["owner"], cievent["project"], cievent["build_num"], repo_id
         )
 
         _update_github_pr(
@@ -220,10 +220,13 @@ def gh_handler(event, context):
     summary_url = ghevent["pull_request"]["comments_url"]
     statuses_url = ghevent["pull_request"]["statuses_url"]
     commit_sha = ghevent["pull_request"]["head"]["sha"]
+    repo_id = ghevent["repository"]["id"]
     report = dynamodb.get_report(commit_sha)
 
     if report:
-        footers = _get_footers(report["owner"], report["project"], report["build_num"])
+        footers = _get_footers(
+            report["owner"], report["project"], report["build_num"], repo_id
+        )
         cov_report = report.get("cov_report", False)
         quality_report = report.get("quality_report", False)
 

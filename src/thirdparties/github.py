@@ -70,6 +70,15 @@ def get_open_prs(repo):
     return response.json()
 
 
+def get_repo_id(owner, repo):
+    url = f"https://api.github.com/repos/{owner}/{repo}"
+    headers = _get_gh_headers()
+
+    response = requests.get(url, headers=headers)
+    content = response.json()
+    return content["id"]
+
+
 def write_standard_summary(url, report, resume):
     headers = _get_gh_headers()
     body = {"body": summary_factory.create_standard_summary(report, resume)}

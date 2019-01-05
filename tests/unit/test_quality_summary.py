@@ -116,7 +116,7 @@ def test_get_reports_link(mocker, ci_artifacts_payload):
         return_value=json.loads(ci_artifacts_payload),
     )
 
-    reports = quality_summary._get_reports_link("", "", "")
+    reports = quality_summary._get_reports_link("", "", "", "")
 
     assert len(reports.keys()) == 2
     check_report_url(reports, "flake8", "flake8.html")
