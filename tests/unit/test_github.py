@@ -57,7 +57,7 @@ def test_create_standard_summary(expected_headers, mocker):
     post_mock = mocker.patch.object(github.requests, "post", return_value=MagicMock())
     patch_mock = mocker.patch.object(github.requests, "patch", return_value=MagicMock())
 
-    github.write_standard_summary("url", [])
+    github.write_standard_summary("url", [], "resume")
 
     assert patch_mock.called is False
     post_mock.assert_called_once_with(
@@ -73,7 +73,7 @@ def test_edit_standard_summary(expected_headers, mocker):
     post_mock = mocker.patch.object(github.requests, "post", return_value=MagicMock())
     patch_mock = mocker.patch.object(github.requests, "patch", return_value=MagicMock())
 
-    github.write_standard_summary("url", [])
+    github.write_standard_summary("url", [], "resume")
 
     assert post_mock.called is False
     patch_mock.assert_called_once_with(

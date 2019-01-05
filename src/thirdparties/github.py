@@ -70,9 +70,9 @@ def get_open_prs(repo):
     return response.json()
 
 
-def write_standard_summary(url, report):
+def write_standard_summary(url, report, resume):
     headers = _get_gh_headers()
-    body = {"body": summary_factory.create_standard_summary(report)}
+    body = {"body": summary_factory.create_standard_summary(report, resume)}
 
     edit_url = _get_comment_url(url, "Guidelines Report")
     if edit_url:
