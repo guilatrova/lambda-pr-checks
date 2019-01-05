@@ -46,6 +46,7 @@ def _get_reports_link(owner, project, build_num):
     Returns artifacts links from CircleCI
     """
     artifacts = circleci.get_artifacts_from_build(owner, project, build_num)
+    print(f"Retrieven artifacts: {artifacts}")
     reports = {
         "coverage": {"name": "coverage.html", "url": ""},
         "flake8": {"name": "flake8.html", "url": ""},
@@ -229,5 +230,7 @@ def gh_handler(event, context):
         _update_github_pr(
             summary_url, statuses_url, cov_report, quality_report, footers
         )
+    else:
+        print(f"No report found for {commit_sha}")
 
     return OK_RESPONSE
