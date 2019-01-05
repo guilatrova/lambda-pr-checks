@@ -23,6 +23,13 @@ Parameters:
         Type: String
         Description: Token used to get artifacts links from a specific build
 
+    StandardDocs:
+        Type: String
+        Default: ""
+        Description: >
+            Link to the standards document.
+            It will be added to the Guidelines Report.
+
 Globals:
     Function:
         Timeout: 10
@@ -45,6 +52,9 @@ Resources:
                 based on company guidelines.
             CodeUri: src/
             Handler: pr_standard.handler
+            Environment:
+                Variables:
+                    DOCS_STANDARD_LINK: !Ref StandardDocs
             Events:
                 Webhook:
                     Type: Api
