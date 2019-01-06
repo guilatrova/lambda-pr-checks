@@ -110,12 +110,6 @@ def test_read_quality_empty_file(mocker, qualitydiff_empty_content):
 
 
 def test_get_reports_link(mocker, ci_artifacts_payload):
-    mocker.patch.object(
-        quality_summary.circleci,
-        "get_artifacts_from_build",
-        return_value=json.loads(ci_artifacts_payload),
-    )
-
     reports = quality_summary._get_reports_link("", "", "", "")
 
     assert len(reports.keys()) == 2

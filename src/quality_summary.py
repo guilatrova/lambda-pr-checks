@@ -2,11 +2,11 @@ import json
 import re
 
 try:
-    from thirdparties import circleci, github
+    from thirdparties import github
     from aws import dynamodb, s3
     import error_handler
 except ModuleNotFoundError:  # For tests
-    from .thirdparties import circleci, github
+    from .thirdparties import github
     from .aws import dynamodb, s3
     from . import error_handler
 
