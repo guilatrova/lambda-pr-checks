@@ -1,80 +1,117 @@
-# sam-app
+# Lambda PR Checks
 
-This is a sample template for sam-app - Below is a brief explanation of what we have generated for you:
+[FineTune](https://www.finetunelearning.com/) will be holding a development **hackfest** during the month of December/2018 where anybody in the company is welcome to participate. Challenge's goal is to bring some new idea that might benefit the company.
 
-```bash
-.
-├── README.md                   <-- This instructions file
-├── hello_world                 <-- Source code for a lambda function
-│   ├── __init__.py
-│   ├── app.py                  <-- Lambda function code
-│   └── requirements.txt        <-- Python dependencies
-├── template.yaml               <-- SAM Template
-└── tests                       <-- Unit tests
-    └── unit
-        ├── __init__.py
-        └── test_handler.py
-```
+This hackfest project brings a collection of PR checks to be run inside AWS lambda, all of them has the same purpose: **A better assessment and review of Pull Requests**.
 
-## Requirements
+## Checks Summary
 
-* AWS CLI already configured with at least PowerUser permission
-* [Python 3 installed](https://www.python.org/downloads/)
+- [Pull Request Standards](#Pull-Request-Standards)
+- [Code Freeze](#Code-Freeze)
+- [Coverage and Quality](#Coverage-and-Quality)
+
+---
+
+# Pull Request Standards
+
+We want to have every Pull Request and commit to follow our guidelines: Tag the ticket in both title and commit, so we can better identify where the tasks were done.
+
+It gives you both a summary report and a PR check as well.
+
+# Code Freeze
+
+There are moments where no matter how successful the code/test is, we just don't want to merge new stuff right away, so we can better plan our QA testing or just schedule a proper time for doing it.
+
+Since we use Slack a lot, makes sense to have a quick command for enabling/disabling such moments.
+
+It's possible to use
+`/codefreeze status`, `/codefreeze enable`, and `/codefreeze disable` for those.
+
+Doing so will block/pass checks in any open PR.
+
+# Coverage and Quality
+
+It's an integration to validade quality (linters) and tests coverage. It works in two phases:
+
+1. [Generate reports](#Generate-Reports)
+2. [Assess reports](#Assess-Reports)
+
+Second step may be triggered in row if a PR is already open when reports are generated.
+
+![Coverage and Quality workflow](docs/coverage-quality-diagram.png)
+
+### Generate Reports
+
+We use CircleCI with [coverage.py](https://github.com/nedbat/coveragepy) to generate a xml report, then we use [diff-cover](https://github.com/Bachmann1234/diff-cover) to generate both coverage and quality reports only for changed lines of code.
+
+HTML reports are saved inside CircleCI as [artifacts](https://circleci.com/docs/2.0/artifacts/) alongside the outputs of such commands.
+
+Those saved outputs are sent to a S3 bucket, to be read/processed in next step. You can see an output example for [coverage](tests/payloads/covdiff.txt) and [quality](tests/payloads/qualitydiff.txt).
+
+Reports are processed and gets saved to DynamoDB for assessing later.
+
+### Assess Reports
+
+When a PR gets updated with new code, reports are retrieven from DynamoDB and gives you a summary report and a PR check as well.
+
+The summary have some links with more details pointing to HTML report stored in CircleCI artifacts.
+
+# Building & Testing
+
+It requires:
+* [Python 3.7 installed](https://www.python.org/downloads/)
 * [Docker installed](https://www.docker.com/community-edition)
-* [Python Virtual Environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/)
+* [Python Virtual Environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/) (for unit testing)
 
-## Setup process
 
-### Building the project
+## SAM testing
 
-[AWS Lambda requires a flat folder](https://docs.aws.amazon.com/lambda/latest/dg/lambda-python-how-to-create-deployment-package.html) with the application as well as its dependencies. When you make changes to your source code or dependency manifest,
-run the following command to build your project local testing and deployment:
- 
+**SAM CLI** is used to emulate both Lambda and API Gateway locally and uses our `template.yaml` to understand how to bootstrap this environment (runtime, where the source code is, etc.).
+
 ```bash
+export AWS_PROFILE={DESIRED_AWS_ACCOUNT}
+
 sam build
-```
 
-If your dependencies contain native modules that need to be compiled specifically for the operating system running on AWS Lambda, use this command to build inside a Lambda-like Docker container instead:
-```bash
-sam build --use-container
-```
- 
-By default, this command writes built artifacts to `.aws-sam/build` folder.
-
-### Local development
-
-**Invoking function locally through local API Gateway**
-
-```bash
 sam local start-api
 ```
 
-If the previous command ran successfully you should now be able to hit the following local endpoint to invoke your function `http://localhost:3000/hello`
+`localhost:3000` will be available for testing your functions
 
-**SAM CLI** is used to emulate both Lambda and API Gateway locally and uses our `template.yaml` to understand how to bootstrap this environment (runtime, where the source code is, etc.) - The following excerpt is what the CLI will read in order to initialize an API and its routes:
+## Unit testing
 
-```yaml
-...
-Events:
-    HelloWorld:
-        Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-        Properties:
-            Path: /hello
-            Method: get
+```bash
+# Setup virtualenv
+virtualenv -p python3.7 .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r dev-requirements.txt
+
+# Run it
+bin/test
 ```
+
+# Environment Variables
+
+For correct functionality, it requires a couple environment variables to be set.
+
+| Variable | Description | Function |
+|---|---|---|
+| **GITHUB_TOKEN** | Token used to update PR status and write comments (aka summaries). Token provided should have permissions for repo and write:discussion. | All |
+| **GITHUB_USER** | The username assigned for the GitHubToken user (e.g. guilatrova). It's used to double check when a summary should be whether edited or deleted. | All |
+| **DOCS_STANDARD_LINK** | Link to the standards document. It will be added to the Guidelines Report. | Pull Request Standards |
+| **BUCKET_NAME** | S3 bucket that will be used to store/read quality/coverage reports | Coverage and Quality |
+
+---
+
+* AWS CLI already configured with at least PowerUser permission
+* [Python 3 installed](https://www.python.org/downloads/)
+
 
 ## Packaging and deployment
 
-AWS Lambda Python runtime requires a flat folder with all dependencies including the application. SAM will use `CodeUri` property to know where to look up for both application and dependencies:
-
-```yaml
-...
-    HelloWorldFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            CodeUri: hello_world/
-            ...
-```
+AWS Lambda Python runtime requires a flat folder with all dependencies including the application. SAM will use `CodeUri` property to know where to look up for both application and dependencies.
 
 Firstly, we need a `S3 bucket` where we can upload our Lambda functions packaged as ZIP before we deploy anything - If you don't have a S3 bucket to store code artifacts then this is a good time to create one:
 
@@ -82,12 +119,16 @@ Firstly, we need a `S3 bucket` where we can upload our Lambda functions packaged
 aws s3 mb s3://BUCKET_NAME
 ```
 
+> Becareful here to avoid messing up the bucket used for storing reports (that uses the BUCKET_NAME variable) with this one used for storing the lambda functions.
+
+## Manual deployment
+
 Next, run the following command to package our Lambda function to S3:
 
 ```bash
 sam package \
     --output-template-file packaged.yaml \
-    --s3-bucket REPLACE_THIS_WITH_YOUR_S3_BUCKET_NAME
+    --s3-bucket BUCKET_NAME
 ```
 
 Next, the following command will create a Cloudformation Stack and deploy your SAM resources.
@@ -95,66 +136,16 @@ Next, the following command will create a Cloudformation Stack and deploy your S
 ```bash
 sam deploy \
     --template-file packaged.yaml \
-    --stack-name sam-app \
+    --stack-name lambda-pr-checks \
     --capabilities CAPABILITY_IAM
 ```
 
 > **See [Serverless Application Model (SAM) HOWTO Guide](https://github.com/awslabs/serverless-application-model/blob/master/HOWTO.md) for more details in how to get started.**
 
-After deployment is complete you can run the following command to retrieve the API Gateway Endpoint URL:
-
-```bash
-aws cloudformation describe-stacks \
-    --stack-name sam-app \
-    --query 'Stacks[].Outputs'
-``` 
-
-## Testing
-
-We use **Pytest** and **pytest-mock** for testing our code and you can install it using pip: ``pip install pytest pytest-mock`` 
-
-Next, we run `pytest` against our `tests` folder to run our initial unit tests:
-
-```bash
-python -m pytest tests/ -v
-```
-
-**NOTE**: It is recommended to use a Python Virtual environment to separate your application development from  your system Python installation.
-
-# Appendix
-
-### Python Virtual environment
-**In case you're new to this**, python3 comes with `virtualenv` library by default so you can simply run the following:
-
-1. Create a new virtual environment
-2. Install dependencies in the new virtual environment
-
-```bash
-python3 -m venv .venv
-. .venv/bin/activate
-pip install -r requirements.txt
-```
+## Script deployment
 
 
-**NOTE:** You can find more information about Virtual Environment at [Python Official Docs here](https://docs.python.org/3/tutorial/venv.html). Alternatively, you may want to look at [Pipenv](https://github.com/pypa/pipenv) as the new way of setting up development workflows
-## AWS CLI commands
 
-AWS CLI commands to package, deploy and describe outputs defined within the cloudformation stack:
-
-```bash
-sam package \
-    --output-template-file packaged.yaml \
-    --s3-bucket REPLACE_THIS_WITH_YOUR_S3_BUCKET_NAME
-
-sam deploy \
-    --template-file packaged.yaml \
-    --stack-name sam-app \
-    --capabilities CAPABILITY_IAM \
-    --parameter-overrides MyParameterSample=MySampleValue
-
-aws cloudformation describe-stacks \
-    --stack-name sam-app --query 'Stacks[].Outputs'
-```
 
 ## Bringing to the next level
 
