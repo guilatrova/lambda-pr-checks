@@ -10,7 +10,7 @@ This hackfest project brings a collection of PR checks to be run inside AWS lamb
     - [Pull Request Standards](#Pull-Request-Standards)
     - [Code Freeze](#Code-Freeze)
     - [Coverage and Quality](#Coverage-and-Quality)
-- [Building & Testing](#Building-Testing)
+- [Building & Testing](#Building--Testing)
 - [Environment Variables](#Environment-Variables)
 - [Packaging and deployment](#Packaging-and-deployment)
 - [Bringing to the next level](#Bringing-to-the-next-level)
