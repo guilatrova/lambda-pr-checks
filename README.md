@@ -26,6 +26,14 @@ We want to have every Pull Request and commit to follow our guidelines: Tag the 
 
 It gives you both a summary report and a PR check as well.
 
+### Result Example
+
+**Summary**
+![Standard Summary](docs/guidelines-summary-example.png)
+
+**Check**
+![Standard Check](docs/guidelines-check-example.png)
+
 
 # Code Freeze
 
@@ -66,6 +74,13 @@ When a PR gets updated with new code, reports are retrieven from DynamoDB and gi
 
 The summary have some links with more details pointing to HTML report stored in CircleCI artifacts.
 
+### Result Example
+
+**Summary**
+![Coverage Quality Summary](docs/coverage-quality-summary-example.png)
+
+**Check**
+![Coverage Quality Check](docs/coverage-quality-check-example.png)
 
 # Building & Testing
 
