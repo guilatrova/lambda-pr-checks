@@ -1,0 +1,24 @@
+#!/bin/bash
+
+STACK="$1"
+BUCKET="$2"
+
+# Parameters
+GH_TOKEN="$3"
+GH_USERNAME="$4"
+DOCS_URL="$5"
+REPORTS_BUCKET_NAME="$6"
+
+sam package \
+    --output-template-file packaged.yaml \
+    --s3-bucket $BUCKET
+
+sam deploy \
+    --template-file packaged.yaml \
+    --stack-name $STACK \
+    --parameter-overrides \
+        GitHubToken="$GH_TOKEN" \
+        GitHubUser="$GH_USERNAME" \
+        ReportsBucketName="$REPORTS_BUCKET_NAME" \
+        StandardDocs="$DOCS_URL" \
+    --capabilities CAPABILITY_IAM

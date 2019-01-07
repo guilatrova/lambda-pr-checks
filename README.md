@@ -4,19 +4,28 @@
 
 This hackfest project brings a collection of PR checks to be run inside AWS lambda, all of them has the same purpose: **A better assessment and review of Pull Requests**.
 
-## Checks Summary
+## Summary
 
-- [Pull Request Standards](#Pull-Request-Standards)
-- [Code Freeze](#Code-Freeze)
-- [Coverage and Quality](#Coverage-and-Quality)
+- Checks
+    - [Pull Request Standards](#Pull-Request-Standards)
+    - [Code Freeze](#Code-Freeze)
+    - [Coverage and Quality](#Coverage-and-Quality)
+- [Building & Testing](#Building-Testing)
+- [Environment Variables](#Environment-Variables)
+- [Packaging and deployment](#Packaging-and-deployment)
+- [Bringing to the next level](#Bringing-to-the-next-level)
+- [Thanks](#Thanks)
+
 
 ---
+
 
 # Pull Request Standards
 
 We want to have every Pull Request and commit to follow our guidelines: Tag the ticket in both title and commit, so we can better identify where the tasks were done.
 
 It gives you both a summary report and a PR check as well.
+
 
 # Code Freeze
 
@@ -28,6 +37,7 @@ It's possible to use
 `/codefreeze status`, `/codefreeze enable`, and `/codefreeze disable` for those.
 
 Doing so will block/pass checks in any open PR.
+
 
 # Coverage and Quality
 
@@ -55,6 +65,7 @@ Reports are processed and gets saved to DynamoDB for assessing later.
 When a PR gets updated with new code, reports are retrieven from DynamoDB and gives you a summary report and a PR check as well.
 
 The summary have some links with more details pointing to HTML report stored in CircleCI artifacts.
+
 
 # Building & Testing
 
@@ -92,6 +103,7 @@ pip install -r dev-requirements.txt
 bin/test
 ```
 
+
 # Environment Variables
 
 For correct functionality, it requires a couple environment variables to be set.
@@ -103,13 +115,8 @@ For correct functionality, it requires a couple environment variables to be set.
 | **DOCS_STANDARD_LINK** | Link to the standards document. It will be added to the Guidelines Report. | Pull Request Standards |
 | **BUCKET_NAME** | S3 bucket that will be used to store/read quality/coverage reports | Coverage and Quality |
 
----
 
-* AWS CLI already configured with at least PowerUser permission
-* [Python 3 installed](https://www.python.org/downloads/)
-
-
-## Packaging and deployment
+# Packaging and deployment
 
 AWS Lambda Python runtime requires a flat folder with all dependencies including the application. SAM will use `CodeUri` property to know where to look up for both application and dependencies.
 
@@ -119,7 +126,7 @@ Firstly, we need a `S3 bucket` where we can upload our Lambda functions packaged
 aws s3 mb s3://BUCKET_NAME
 ```
 
-> Becareful here to avoid messing up the bucket used for storing reports (that uses the BUCKET_NAME variable) with this one used for storing the lambda functions.
+> Becareful here to avoid messing up the bucket u'sed for storing reports (that uses the BUCKET_NAME variable) with this one used for storing the lambda functions.
 
 ## Manual deployment
 
@@ -128,7 +135,7 @@ Next, run the following command to package our Lambda function to S3:
 ```bash
 sam package \
     --output-template-file packaged.yaml \
-    --s3-bucket BUCKET_NAME
+    --s3-bucket $BUCKET_NAME
 ```
 
 Next, the following command will create a Cloudformation Stack and deploy your SAM resources.
@@ -136,7 +143,7 @@ Next, the following command will create a Cloudformation Stack and deploy your S
 ```bash
 sam deploy \
     --template-file packaged.yaml \
-    --stack-name lambda-pr-checks \
+    --stack-name $STACK_NAME \
     --capabilities CAPABILITY_IAM
 ```
 
@@ -144,19 +151,25 @@ sam deploy \
 
 ## Script deployment
 
+You can use `deploy` script for automating the packaging + deployment with correct environment variables.
 
+```bash
+# Format
+bin/deploy "stack-name" "lambda-bucket-name" "gh-token" "gh-username" "docs-url" "reports-bucket-name"
 
+# Example
+bin/deploy "lambda-pr-checks-stack" "lambda-pr-checks-functions" "123456789" "guilatrova" "www.mycompany.com/git/standards" "ci-quality-reports"
+```
 
-## Bringing to the next level
+# Bringing to the next level
 
-Here are a few ideas that you can use to get more acquainted as to how this overall process works:
+The project would be awesome if we:
 
-* Create an additional API resource (e.g. /hello/{proxy+}) and return the name requested through this new path
-* Update unit test to capture that
-* Package & Deploy
+- Add `aws` and `thirdparties` as [lambda layers](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html).
+- Use quality report information to [request line reviews](https://developer.github.com/v3/pulls/reviews/#example) on GitHub.
+- Setup a [GitHub App](https://developer.github.com/apps/) over using a user like we do.
 
-Next, you can use the following resources to know more about beyond hello world samples and how others structure their Serverless applications:
+# Thanks
 
-* [AWS Serverless Application Repository](https://aws.amazon.com/serverless/serverlessrepo/)
-* [Chalice Python Serverless framework](https://github.com/aws/chalice)
-* Sample Python with 3rd party dependencies, pipenv and Makefile: ``sam init --location https://github.com/aws-samples/cookiecutter-aws-sam-python``
+I thank primarily to **God** for such great inspiration and opportunity to showcase a project like that.
+I also thank my company, **FineTune** for this great idea on throwing a hackfest challenge and the incentive on doing so.
