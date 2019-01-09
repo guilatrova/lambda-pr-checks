@@ -29,9 +29,11 @@ It gives you both a summary report and a PR check as well.
 ### Result Example
 
 **Summary**
+
 ![Standard Summary](docs/guidelines-summary-example.png)
 
 **Check**
+
 ![Standard Check](docs/guidelines-check-example.png)
 
 
@@ -49,7 +51,7 @@ Doing so will block/pass checks in any open PR.
 
 # Coverage and Quality
 
-It's an integration to validade quality (linters) and tests coverage. It works in two phases:
+It's an integration to validate quality (linters) and tests coverage. It works in two phases:
 
 1. [Generate reports](#Generate-Reports)
 2. [Assess reports](#Assess-Reports)
@@ -77,9 +79,11 @@ The summary have some links with more details pointing to HTML report stored in 
 ### Result Example
 
 **Summary**
+
 ![Coverage Quality Summary](docs/coverage-quality-summary-example.png)
 
 **Check**
+
 ![Coverage Quality Check](docs/coverage-quality-check-example.png)
 
 # Building & Testing
