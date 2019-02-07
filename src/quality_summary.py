@@ -188,7 +188,7 @@ def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, foo
 
 # Although it's CI, GitHub fail response fits good though
 @error_handler.wrapper_for("github")
-@security.secret_handler("FT-Signature")
+@security.secret_handler("Ft-Signature")
 def ci_handler(event, context):
     """
     Expects to receive a payload from CircleCI with following info:
