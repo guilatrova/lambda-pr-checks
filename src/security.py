@@ -26,7 +26,7 @@ def validate_secret(signature, body):
         logger.error("Signature not signed with sha1")
         return False
 
-    mac = hmac.new(secret, msg=body, digestmod=hashlib.sha1)
+    mac = hmac.new(secret, msg=body.encode(), digestmod=hashlib.sha1)
 
     expected = str(mac.hexdigest())
     received = str(signature)
