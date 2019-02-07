@@ -5,10 +5,12 @@ try:
     from thirdparties import github
     from aws import dynamodb, s3
     import error_handler
+    import security
 except ModuleNotFoundError:  # For tests
     from .thirdparties import github
     from .aws import dynamodb, s3
     from . import error_handler
+    from . import security
 
 COV_EMPTY_TEXT = "No lines with coverage information in this diff."
 COV_REPORT_FOOTER = "See details in the [**coverage report**](#COV_LINK#)."
@@ -186,6 +188,7 @@ def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, foo
 
 # Although it's CI, GitHub fail response fits good though
 @error_handler.wrapper_for("github")
+@security.secret_handler("Ft-Signature")
 def ci_handler(event, context):
     """
     Expects to receive a payload from CircleCI with following info:
@@ -214,6 +217,7 @@ def ci_handler(event, context):
 
 
 @error_handler.wrapper_for("github")
+@security.secret_handler("X-Hub-Signature")
 def gh_handler(event, context):
     ghevent = json.loads(event.get("body"))
 
