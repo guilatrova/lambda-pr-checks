@@ -48,3 +48,5 @@ def secret_handler(func):
             return func(event, *args, **kwargs)
 
         return INVALID_SIGNATURE_RESPONSE
+
+    return _wrapper
