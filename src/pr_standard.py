@@ -5,9 +5,11 @@ import re
 try:
     from thirdparties import github
     import error_handler
+    import security
 except ModuleNotFoundError:  # For tests
     from .thirdparties import github
     from . import error_handler
+    from . import security
 
 logger = logging.getLogger()
 
@@ -107,6 +109,7 @@ def _validate_pr(pull_request):
 
 
 @error_handler.wrapper_for("github")
+@security.secret_handler
 def handler(event, context):
     """
     Lambda handler expecting a Pull Request event from GitHub.
