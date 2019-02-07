@@ -21,8 +21,8 @@ def validate_secret(signature, body):
         logger.error("No signature found")
         return False
 
-    sha_name, signature = signature.split('=')
-    if sha_name != 'sha1':
+    sha_name, signature = signature.split("=")
+    if sha_name != "sha1":
         logger.error("Signature not signed with sha1")
         return False
 
@@ -38,16 +38,19 @@ def validate_secret(signature, body):
 
     return True
 
-def secret_handler(func):
-    def _wrapper(event, *args, **kwargs):
-        print("Secret handler attached")
+def secret_handler(signature_header):
+    def _outer_wrapper(func):
+        def _wrapper(event, *args, **kwargs):
+            print("Secret handler attached")
 
-        signature = event.get('headers', {}).get('X-Hub-Signature', '')
-        body = event.get('body')
+            signature = event.get("headers", {}).get(signature_header, "")
+            body = event.get("body")
 
-        if validate_secret(signature, body):
-            return func(event, *args, **kwargs)
+            if validate_secret(signature, body):
+                return func(event, *args, **kwargs)
 
-        return INVALID_SIGNATURE_RESPONSE
+            return INVALID_SIGNATURE_RESPONSE
 
-    return _wrapper
+        return _wrapper
+
+    return _outer_wrapper

@@ -109,7 +109,7 @@ def _validate_pr(pull_request):
 
 
 @error_handler.wrapper_for("github")
-@security.secret_handler
+@security.secret_handler("X-Hub-Signature")
 def handler(event, context):
     """
     Lambda handler expecting a Pull Request event from GitHub.
