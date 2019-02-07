@@ -1,4 +1,6 @@
 pytest
 pytest-mock
 pytest-dotenv
+flake8
+black
 -r src/requirements.txt
