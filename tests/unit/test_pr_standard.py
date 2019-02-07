@@ -103,6 +103,7 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
     github_payload = json.loads(event["body"])
 
     report = {}
+    mocker.patch.object(pr_standard.security, "validate_secret", return_value=True)
     update_pr_status_mock = mocker.patch.object(
         pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
     )
@@ -133,6 +134,7 @@ def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mock
     github_payload = json.loads(event["body"])
 
     report = {}
+    mocker.patch.object(pr_standard.security, "validate_secret", return_value=True)
     update_pr_status_mock = mocker.patch.object(
         pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
     )
@@ -163,6 +165,7 @@ def test_lambda_handler_handles_exception(
 ):
     event = event_creator(incoming_open_pr_payload)
 
+    mocker.patch.object(pr_standard.security, "validate_secret", return_value=True)
     mocker.patch.object(pr_standard, "_validate_pr", return_value=({}, True, "reason"))
     mocker.patch.object(
         pr_standard.github,
