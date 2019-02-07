@@ -11,7 +11,8 @@ INVALID_SIGNATURE_RESPONSE = {
 }
 
 def _get_secret():
-    return os.environ.get("LAMBDA_SECRET", "secretless")
+    raw = os.environ.get("LAMBDA_SECRET", "secretless")
+    return raw.encode()
 
 def validate_secret(signature, body):
     secret = _get_secret()
