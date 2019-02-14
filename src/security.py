@@ -1,18 +1,17 @@
 import hashlib
 import hmac
-import json
 import logging
 import os
 
 logger = logging.getLogger()
 
-INVALID_SIGNATURE_RESPONSE = {
-    "statusCode": 404
-}
+INVALID_SIGNATURE_RESPONSE = {"statusCode": 404}
+
 
 def _get_secret():
     raw = os.environ.get("LAMBDA_SECRET", "secretless")
     return raw.encode()
+
 
 def validate_secret(signature, body):
     secret = _get_secret()
@@ -37,6 +36,7 @@ def validate_secret(signature, body):
         return False
 
     return True
+
 
 def secret_handler(signature_header):
     def _outer_wrapper(func):
