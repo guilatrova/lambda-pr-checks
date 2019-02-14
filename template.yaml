@@ -21,7 +21,7 @@ Parameters:
 
     ReportsBucketName:
         Type: String
-        Description: S3 bucket that will be used to store/read quality/coverage reports
+        Description: S3 bucket that will be used to store/read quality/coverage reports.
 
     StandardDocs:
         Type: String
@@ -29,6 +29,10 @@ Parameters:
         Description: >
             Link to the standards document.
             It will be added to the Guidelines Report.
+
+    LambdaSecret:
+        Type: String
+        Description: Secret used to secure webhooks by signing payloads sent to lambda functions in header.
 
 Globals:
     Function:
@@ -38,6 +42,7 @@ Globals:
             Variables:
                 GITHUB_TOKEN: !Ref GitHubToken
                 GITHUB_USER: !Ref GitHubUser
+                LAMBDA_SECRET: !Ref LambdaSecret
 
 Resources:
 
