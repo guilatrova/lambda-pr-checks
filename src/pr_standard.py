@@ -14,7 +14,14 @@ except ModuleNotFoundError:  # For tests
 logger = logging.getLogger()
 
 CHECK_TITLE = "FineTune Standard"
-ALLOWED_COMMITS = ["[shepherd]", "Merge"]
+ALLOWED_COMMITS = [
+    r"^\w+\-\d+",
+    r"^NO-TICKET",
+    r"^\[shepherd\]",
+    r"^Merge",
+    r"Release \d{8}",
+]
+
 # reasons
 SUCCESS_REASON = "Your PR is up to standards!"
 TITLE_FAILURE_REASON = "Your PR title is not up to standards"
@@ -28,7 +35,7 @@ OK_RESPONSE = {
 
 
 def _validate_title(title):
-    return title.startswith("NO-TICKET") or bool(re.match(r"\w+\-\d+", title))
+    return any(re.match(allowed, title) for allowed in ALLOWED_COMMITS)
 
 
 def _validate_commits(pull_request):
@@ -55,14 +62,7 @@ def _validate_commits(pull_request):
             "message": commit_wrapper["commit"]["message"],
         }
 
-        if not _validate_title(commit["message"]):
-            standard = any(
-                commit["message"].startswith(allowed) for allowed in ALLOWED_COMMITS
-            )
-        else:
-            standard = True
-
-        commit["standard"] = standard
+        commit["standard"] = _validate_title(commit["message"])
         analyzed.append(commit)
 
     result = all(commit["standard"] for commit in analyzed)

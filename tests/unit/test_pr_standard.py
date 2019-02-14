@@ -9,10 +9,11 @@ from src import error_handler, pr_standard
 @pytest.fixture
 def valid_commits():
     return [
-        {"sha": "123", "commit": {"message": "NO-TICKET Changed"}},
         {"sha": "456", "commit": {"message": "FY-1234 Do work"}},
-        {"sha": "789", "commit": {"message": "Merge pull request from somewhere"}},
+        {"sha": "123", "commit": {"message": "NO-TICKET Changed"}},
         {"sha": "901", "commit": {"message": "[shepherd] autogen"}},
+        {"sha": "789", "commit": {"message": "Merge pull request from somewhere"}},
+        {"sha": "012", "commit": {"message": "Release 20190822 Anniversary release"}},
     ]
 
 
@@ -44,7 +45,7 @@ def test_valid_title_with_ticket_ids():
 def test_valid_commits(valid_commits, mocker):
     mocker.patch.object(pr_standard.github, "get_commits", return_value=valid_commits)
     result = pr_standard._validate_commits({"commits_url": ""})
-    check_commits(result, True, True, True, True)
+    check_commits(result, True, True, True, True, True)
 
 
 def test_invalid_commits(valid_commits, mocker):
@@ -56,7 +57,7 @@ def test_invalid_commits(valid_commits, mocker):
         }
     )
     result = pr_standard._validate_commits({"commits_url": ""})
-    check_commits(result, True, True, True, True, False)
+    check_commits(result, True, True, True, True, True, False)
 
 
 def test_validate_pr_success(mocker):
