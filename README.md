@@ -2,6 +2,8 @@
 
 [FineTune](https://www.finetunelearning.com/) will be holding a development **hackfest** during the month of December/2018 where anybody in the company is welcome to participate. Challenge's goal is to bring some new idea that might benefit the company.
 
+**This project won the first place in 2018 among all employees in company**
+
 This hackfest project brings a collection of PR checks to be run inside AWS lambda, all of them has the same purpose: **A better assessment and review of Pull Requests**.
 
 ## Summary
