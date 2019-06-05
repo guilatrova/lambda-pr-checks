@@ -112,7 +112,8 @@ def test_read_quality_empty_file(mocker, qualitydiff_empty_content):
 def test_get_reports_link(mocker, ci_artifacts_payload):
     reports = quality_summary._get_reports_link("", "", "", "")
 
-    assert len(reports.keys()) == 2
+    assert len(reports.keys()) == 3
+    check_report_url(reports, "eslint", "eslint.html")
     check_report_url(reports, "flake8", "flake8.html")
     check_report_url(reports, "coverage", "coverage.html")
 

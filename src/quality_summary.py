@@ -4,11 +4,13 @@ import re
 try:
     from thirdparties import github
     from aws import dynamodb, s3
+    from qualitytools.factory import create_quality_adapter
     import error_handler
     import security
 except ModuleNotFoundError:  # For tests
     from .thirdparties import github
     from .aws import dynamodb, s3
+    from .qualitytools.factory import create_quality_adapter
     from . import error_handler
     from . import security
 
@@ -54,6 +56,10 @@ def _get_reports_link(owner, project, build_num, repo_id):
             "name": "flake8.html",
             "url": f"https://{build_num}-{repo_id}-gh.circle-artifacts.com/0/quality-reports/flake8.html",
         },
+        "eslint": {
+            "name": "eslint.html",
+            "url": f"https://{build_num}-{repo_id}-gh.circle-artifacts.com/0/quality-reports/eslint.html",
+        },
     }
 
     return reports
@@ -93,32 +99,9 @@ def _read_quality_file(hash):
     """
     content = s3.get_quality_file(hash)
 
-    if content and QUALITY_EMPTY_TEXT not in content:
-        report = {}
-        report["target_branch"] = re.search(r"Diff: (.*)\.\.\.", content).group(1)
-        report["total"] = re.search(r"Total: (.*) line", content).group(1).strip()
-        report["violations"] = (
-            re.search(r"Violations: (.*) line", content).group(1).strip()
-        )
-        report["quality"] = re.search(r"Quality: (.*)", content).group(1).strip()
-
-        matches = re.findall(r"(.*):(\d+): ([A-Z]\d+) (.*)", content)
-        report["issues"] = [
-            {
-                "file": match[0],
-                "line": match[1],
-                "error_code": match[2],
-                "description": match[3],
-            }
-            for match in matches
-        ]
-
-        matches = re.findall(r"(.*) \((.*)\)", content)
-        report["files"] = [{"file": match[0], "value": match[1]} for match in matches]
-
-        return report
-
-    return False
+    quality_adapter = create_quality_adapter(content)
+    report = quality_adapter.generate_report()
+    return report
 
 
 def _extract_pr_data(raw_url):
