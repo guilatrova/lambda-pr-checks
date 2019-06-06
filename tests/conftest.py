@@ -17,17 +17,17 @@ def ci_artifacts_payload():
 
 @pytest.fixture()
 def qualitydiff_empty_content():
-    return _read_payload("qualitydiff_empty.txt")
+    return _read_payload("flake8/qualitydiff_empty.txt")
 
 
 @pytest.fixture()
 def qualitydiff_content():
-    return _read_payload("qualitydiff.txt")
+    return _read_payload("flake8/qualitydiff.txt")
 
 
 @pytest.fixture()
 def qualitydiffsingle_content():
-    return _read_payload("qualitydiff_single.txt")
+    return _read_payload("flake8/qualitydiff_single.txt")
 
 
 @pytest.fixture()

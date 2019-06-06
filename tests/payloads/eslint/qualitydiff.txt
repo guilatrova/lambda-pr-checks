@@ -1,0 +1,17 @@
+-------------
+Diff Quality
+Quality Report: eslint
+Diff: origin/master...HEAD, staged and unstaged changes
+-------------
+frontend/src/core/App.js (66.7%):
+frontend/src/core/App.js:14: Error - Missing semicolon. (semi)
+frontend/src/core/App.js:16: Error - Missing semicolon. (semi)
+frontend/src/utils/log.js (0.0%):
+frontend/src/utils/log.js:7: Error - Missing semicolon. (semi)
+config/deployopts.js (100%)
+config/webpack.testing.js (100%)
+-------------
+Total:   146 lines
+Violations: 3 lines
+% Quality: 97%
+-------------
