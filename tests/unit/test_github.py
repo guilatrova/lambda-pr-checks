@@ -22,9 +22,9 @@ def cov_report(covdiff_content, mocker):
 
 
 @pytest.fixture()
-def quality_report(qualitydiff_content, mocker):
+def quality_report(flake8_qualitydiff_content, mocker):
     mocker.patch.object(
-        quality_summary.s3, "get_quality_file", return_value=qualitydiff_content
+        quality_summary.s3, "get_quality_file", return_value=flake8_qualitydiff_content
     )
     return quality_summary._read_quality_file("")
 

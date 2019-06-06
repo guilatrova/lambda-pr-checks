@@ -54,9 +54,9 @@ def test_read_coverage_empty_file(mocker, covdiff_empty_content):
     assert report is False
 
 
-def test_read_quality_file(mocker, qualitydiff_content):
+def test_read_quality_file(mocker, flake8_qualitydiff_content):
     mocker.patch.object(
-        quality_summary.s3, "get_quality_file", return_value=qualitydiff_content
+        quality_summary.s3, "get_quality_file", return_value=flake8_qualitydiff_content
     )
 
     report = quality_summary._read_quality_file("")
@@ -88,9 +88,9 @@ def test_read_quality_file(mocker, qualitydiff_content):
     assert report["quality"] == "99%"
 
 
-def test_read_quality_file_single_line(mocker, qualitydiffsingle_content):
+def test_read_quality_file_single_line(mocker, flake8_qualitydiffsingle_content):
     mocker.patch.object(
-        quality_summary.s3, "get_quality_file", return_value=qualitydiffsingle_content
+        quality_summary.s3, "get_quality_file", return_value=flake8_qualitydiffsingle_content
     )
 
     report = quality_summary._read_quality_file("")
@@ -99,9 +99,9 @@ def test_read_quality_file_single_line(mocker, qualitydiffsingle_content):
     assert report["violations"] == "1"
 
 
-def test_read_quality_empty_file(mocker, qualitydiff_empty_content):
+def test_read_quality_empty_file(mocker, flake8_qualitydiff_empty_content):
     mocker.patch.object(
-        quality_summary.s3, "get_quality_file", return_value=qualitydiff_empty_content
+        quality_summary.s3, "get_quality_file", return_value=flake8_qualitydiff_empty_content
     )
 
     report = quality_summary._read_quality_file("")

@@ -56,9 +56,9 @@ def test_create_coverage_summary(mocker, covdiff_content):
     assert "\nexample/schemas/subjects.py        25.0% " in result
 
 
-def test_create_quality_summary(mocker, qualitydiff_content):
+def test_create_quality_summary(mocker, flake8_qualitydiff_content):
     mocker.patch.object(
-        quality_summary.s3, "get_quality_file", return_value=qualitydiff_content
+        quality_summary.s3, "get_quality_file", return_value=flake8_qualitydiff_content
     )
 
     report = quality_summary._read_quality_file("")
