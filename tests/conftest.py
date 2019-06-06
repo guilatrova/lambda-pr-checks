@@ -31,6 +31,11 @@ def flake8_qualitydiffsingle_content():
 
 
 @pytest.fixture()
+def eslint_qualitydiff_content():
+    return _read_payload("eslint/qualitydiff.txt")
+
+
+@pytest.fixture()
 def covdiff_content():
     return _read_payload("covdiff.txt")
 

@@ -1,6 +1,7 @@
 from .flake8 import Flake8Adapter
+from .eslint import EslintAdapter
 
-adapter_map = {"flake8": Flake8Adapter}
+adapter_map = {"flake8": Flake8Adapter, "eslint": EslintAdapter}
 
 
 def create_quality_adapter(content):
