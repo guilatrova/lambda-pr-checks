@@ -204,12 +204,15 @@ def ci_handler(event, context):
         # Expected format: https://github.com/:owner/:repo/pull/:number
         repo_id = github.get_repo_id(cievent["owner"], cievent["project"])
         summary_url, statuses_url = _get_pr_urls(cievent["pr_link"], commit_sha)
-        footers = _get_footers(
+        report_links = _get_reports_link(
             cievent["owner"], cievent["project"], cievent["build_num"], repo_id
+        )
+        footers = _get_footers(
+            cievent["owner"], cievent["project"], cievent["build_num"], repo_id, report_links
         )
 
         _update_github_pr(
-            summary_url, statuses_url, cov_report, quality_report, footers
+            summary_url, statuses_url, cov_report, quality_report, footers, report_links
         )
 
     return OK_RESPONSE
