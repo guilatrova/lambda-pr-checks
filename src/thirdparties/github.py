@@ -93,6 +93,7 @@ def write_standard_summary(url, report, resume):
 def write_quality_summary(url, cov_report, quality_report, cov_footer, quality_footer):
     headers = _get_gh_headers()
 
+    comment_keys_to_find = ["Quality Report", "Coverage Report"]
     if cov_report or quality_report:
         cov_summary = summary_factory.create_coverage_summary(cov_report, cov_footer)
         quality_summary = summary_factory.create_quality_summary(
@@ -101,7 +102,7 @@ def write_quality_summary(url, cov_report, quality_report, cov_footer, quality_f
 
         body = {"body": f"{cov_summary}\n{quality_summary}"}
 
-        edit_url = _get_comment_url(url, "Coverage Diff", "Quality Diff")
+        edit_url = _get_comment_url(url, *comment_keys_to_find)
         if edit_url:
             return requests.patch(edit_url, json=body, headers=headers)
         else:
@@ -111,7 +112,7 @@ def write_quality_summary(url, cov_report, quality_report, cov_footer, quality_f
             "No report provided, so no summary to write."
             + "Let's check if we need to delete something."
         )
-        delete_url = _get_comment_url(url, "Coverage Diff", "Quality Diff")
+        delete_url = _get_comment_url(url, *comment_keys_to_find)
 
         if delete_url:
             return requests.delete(delete_url, headers=headers)
