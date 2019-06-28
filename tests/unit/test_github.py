@@ -32,11 +32,11 @@ def quality_report(qualitydiff_content, mocker):
 def test_update_pr_status(expected_headers, mocker):
     request = mocker.patch.object(github.requests, "post", return_value=None)
 
-    github.update_pr_status("url", "state", "context", "description")
+    github.update_pr_status("url", "state", "context", "description", "target_url")
 
     request.assert_called_once_with(
         "url",
-        json={"context": "context", "state": "state", "description": "description"},
+        json={"context": "context", "state": "state", "description": "description", "target_url": "target_url"},
         headers=expected_headers,
     )
 

@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import re
@@ -123,7 +124,8 @@ def handler(event, context):
     status = "success" if result else "failure"
 
     print(f"Updating PR status to {status} due {reason}")
-    github.update_pr_status(status_url, status, CHECK_TITLE, reason)
+    target_url = os.environ.get("DOCS_STANDARD_LINK", "")
+    github.update_pr_status(status_url, status, CHECK_TITLE, reason, target_url)
 
     print(f"Writing PR summary for report: {report}")
     github.write_standard_summary(

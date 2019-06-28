@@ -1,3 +1,4 @@
+import os
 import json
 from unittest.mock import MagicMock
 
@@ -15,6 +16,12 @@ def valid_commits():
         {"sha": "789", "commit": {"message": "Merge pull request from somewhere"}},
         {"sha": "012", "commit": {"message": "Release 20190822 Anniversary release"}},
     ]
+
+@pytest.fixture
+def mocked_docs_link(mocker):
+    val = "companystandard.com"
+    mocker.patch.dict(os.environ, {"DOCS_STANDARD_LINK": val})
+    return val
 
 
 def check_commits(result, *args):
@@ -99,7 +106,8 @@ def test_validate_pr_invalid_commits(mocker):
     assert report["commits"] == commits
 
 
-def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
+def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker,
+                        mocked_docs_link):
     event = event_creator(incoming_open_pr_payload)
     github_payload = json.loads(event["body"])
 
@@ -122,6 +130,7 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
         "success",
         pr_standard.CHECK_TITLE,
         "reason",
+        mocked_docs_link
     )
     summary_mock.assert_called_once_with(
         github_payload["pull_request"]["comments_url"], report, "reason"
@@ -130,7 +139,8 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker):
     assert response == pr_standard.OK_RESPONSE
 
 
-def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mocker):
+def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mocker,
+                                   mocked_docs_link):
     event = event_creator(incoming_open_pr_payload)
     github_payload = json.loads(event["body"])
 
@@ -153,6 +163,7 @@ def test_lambda_handler_invalid_pr(event_creator, incoming_open_pr_payload, mock
         "failure",
         pr_standard.CHECK_TITLE,
         "reason",
+        mocked_docs_link
     )
     summary_mock.assert_called_once_with(
         github_payload["pull_request"]["comments_url"], report, "reason"

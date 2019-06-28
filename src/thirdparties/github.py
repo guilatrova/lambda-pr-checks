@@ -55,9 +55,9 @@ def get_commits(url):
     return response.json()
 
 
-def update_pr_status(url, state, check_title, check_description=""):
+def update_pr_status(url, state, check_title, check_description="", details_url=""):
     headers = _get_gh_headers()
-    body = {"context": check_title, "description": check_description, "state": state}
+    body = {"context": check_title, "description": check_description, "state": state, "target_url": details_url}
 
     return requests.post(url, json=body, headers=headers)
 
