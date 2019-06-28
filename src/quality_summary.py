@@ -27,12 +27,10 @@ OK_RESPONSE = {
 }
 
 
-def _get_footers(owner, project, build_num, repo_id):
+def _get_footers(owner, project, build_num, repo_id, report_links):
     """
     Returns two footers to be appended to summaries
     """
-    report_links = _get_reports_link(owner, project, build_num, repo_id)
-
     return {
         "quality": QUALITY_REPORT_FOOTER.replace(
             "#QUALITY_LINK#", report_links["flake8"].get("url", "")
@@ -149,7 +147,7 @@ def _get_pr_urls(raw_url, commit_sha):
     return (summary_url, statuses_url)
 
 
-def _update_github_status(report, url, key, threshold):
+def _update_github_status(report, url, key, threshold, details_link):
     """
     Updates PR check status comparing data from report[key] to threshold
     """
@@ -168,11 +166,12 @@ def _update_github_status(report, url, key, threshold):
     else:
         pr_state = "success"
         description = "No report provided for this commit"
+        details_link = ""  # If not report, don't provide the link
 
-    github.update_pr_status(url, pr_state, f"FineTune {title}", description)
+    github.update_pr_status(url, pr_state, f"FineTune {title}", description, details_link)
 
 
-def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, footers):
+def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, footers, report_links):
     """
     Updates GitHub PR with a summary and two checks for coverage and quality
     """
@@ -182,8 +181,8 @@ def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, foo
     )
 
     # PR checks
-    _update_github_status(cov_report, statuses_url, "coverage", COV_THRESHOLD)
-    _update_github_status(quality_report, statuses_url, "quality", QUALITY_THRESHOLD)
+    _update_github_status(cov_report, statuses_url, "coverage", COV_THRESHOLD, report_links.get("coverage"))
+    _update_github_status(quality_report, statuses_url, "quality", QUALITY_THRESHOLD, report_links.get("quality"))
 
 
 # Although it's CI, GitHub fail response fits good though
@@ -228,14 +227,19 @@ def gh_handler(event, context):
     report = dynamodb.get_report(commit_sha)
 
     if report:
-        footers = _get_footers(
+        report_links = _get_reports_link(
             report["owner"], report["project"], report["build_num"], repo_id
+        )
+
+        footers = _get_footers(
+            report["owner"], report["project"], report["build_num"],
+            repo_id, report_links
         )
         cov_report = report.get("cov_report", False)
         quality_report = report.get("quality_report", False)
 
         _update_github_pr(
-            summary_url, statuses_url, cov_report, quality_report, footers
+            summary_url, statuses_url, cov_report, quality_report, footers, report_links
         )
     else:
         print(f"No report found for {commit_sha}")

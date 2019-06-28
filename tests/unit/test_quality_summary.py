@@ -144,35 +144,35 @@ def test_get_pr_urls():
     )
 
 
-def test_update_github_status_success(mocker):
+def test_update_github_status_failure(mocker):
     update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
     report = {"key": "30%"}
 
-    quality_summary._update_github_status(report, "url", "key", 50)
+    quality_summary._update_github_status(report, "url", "key", 50, "link")
 
     update_status_mock.assert_called_once_with(
-        "url", "failure", "FineTune Key", "Key diff is below expected (30% out of 50%)"
+        "url", "failure", "FineTune Key", "Key diff is below expected (30% out of 50%)", "link"
     )
 
 
-def test_update_github_status_failure(mocker):
+def test_update_github_status_success(mocker):
     update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
     report = {"key": "50%"}
 
-    quality_summary._update_github_status(report, "url", "key", 50)
+    quality_summary._update_github_status(report, "url", "key", 50, "link")
 
     update_status_mock.assert_called_once_with(
-        "url", "success", "FineTune Key", "Key diff is good!"
+        "url", "success", "FineTune Key", "Key diff is good!", "link"
     )
 
 
 def test_update_github_status_no_report(mocker):
     update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
 
-    quality_summary._update_github_status(False, "url", "coverage", 50)
+    quality_summary._update_github_status(False, "url", "coverage", 50, "link")
 
     update_status_mock.assert_called_once_with(
-        "url", "success", "FineTune Coverage", "No report provided for this commit"
+        "url", "success", "FineTune Coverage", "No report provided for this commit", ""
     )
 
 
@@ -183,17 +183,19 @@ def test_update_status_summary_all_successful_reports(mocker):
     footers = {"quality": "quality", "coverage": "coverage"}
     status_url = "status_url"
     summary_url = "summary_url"
+    cov_link = "cov"
+    qual_link = "qual"
+    report_links = {"coverage": cov_link, "quality": qual_link}
 
     write_summary_mock = mocker.patch.object(
         quality_summary.github, "write_quality_summary"
     )
     update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
 
-    quality_summary._update_github_pr(
-        summary_url, status_url, cov_report, quality_report, footers
-    )
-
     # Act
+    quality_summary._update_github_pr(
+        summary_url, status_url, cov_report, quality_report, footers, report_links
+    )
     write_summary_mock.assert_called_once_with(
         summary_url, cov_report, quality_report, footers["coverage"], footers["quality"]
     )
@@ -201,9 +203,9 @@ def test_update_status_summary_all_successful_reports(mocker):
     # Assert
     assert update_status_mock.call_count == 2
     coverage_call = call(
-        status_url, "success", "FineTune Coverage", "Coverage diff is good!"
+        status_url, "success", "FineTune Coverage", "Coverage diff is good!", cov_link
     )
     quality_call = call(
-        status_url, "success", "FineTune Quality", "Quality diff is good!"
+        status_url, "success", "FineTune Quality", "Quality diff is good!", qual_link
     )
     update_status_mock.assert_has_calls([coverage_call, quality_call])
