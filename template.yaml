@@ -37,7 +37,7 @@ Parameters:
 Globals:
     Function:
         Timeout: 10
-        Runtime: python3.7
+        Runtime: python3.6
         Environment:
             Variables:
                 GITHUB_TOKEN: !Ref GitHubToken
@@ -66,55 +66,6 @@ Resources:
                     Properties:
                         Path: /standard
                         Method: post
-
-    # Code Freeze (Slack + Pull Request)
-    CodeFreezerSlashFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            FunctionName: CodeFreeze_SlashFunction
-            Description: Handles commands sent from Slack (e.g. enable code freeze).
-            CodeUri: src/
-            Handler: codefreezer.slack_handler
-            Policies:
-                - DynamoDBCrudPolicy:
-                    TableName: !Ref CodeFreezeConfigTable
-            Environment:
-                Variables:
-                    REPOS: guilatrova/Github-Lambda-Status-Checks # Multiple repos should be separated by a comma
-                    AUTHORIZED: Guilherme # The slack username. Multiple usernames should be separed by a comma
-            Events:
-                Webhook:
-                    Type: Api
-                    Properties:
-                        Path: /codefreeze
-                        Method: post
-
-    PullRequestCodeFreezeCheckFunction:
-        Type: AWS::Serverless::Function
-        Properties:
-            FunctionName: CodeFreezeCheck_PullRequest
-            Description: >
-                Updates status for any changes made to a GitHub PullRequest (e.g. open a PR or update commits),
-                based on Code Freeze status (enabled/disabled).
-            CodeUri: src/
-            Handler: codefreezer.gh_handler
-            Policies:
-                - DynamoDBReadPolicy:
-                    TableName: !Ref CodeFreezeConfigTable
-            Events:
-                Webhook:
-                    Type: Api
-                    Properties:
-                        Path: /codefreeze-status
-                        Method: post
-
-    CodeFreezeConfigTable:
-        Type: AWS::Serverless::SimpleTable
-        Properties:
-            TableName: CodeFreezeConfig
-            PrimaryKey:
-                Name: ConfigName
-                Type: String
 
     # Quality Reports (CI + Pull Request)
     CIReportsFunction:
@@ -167,6 +118,9 @@ Resources:
         Type: AWS::Serverless::SimpleTable
         Properties:
             TableName: QualityReports
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
             PrimaryKey:
                 Name: commit_sha
                 Type: String
