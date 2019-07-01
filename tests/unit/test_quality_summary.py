@@ -2,11 +2,8 @@ import json
 from unittest.mock import call
 
 from src import quality_summary
+from src.CircleCommitDTO import CircleCommitDTO
 
-
-def check_report_url(reports, key, file):
-    assert "circle-artifacts" in reports[key]["url"]
-    assert file in reports[key]["url"]
 
 
 def test_read_coverage_file(mocker, covdiff_content):
@@ -52,15 +49,6 @@ def test_read_coverage_empty_file(mocker, covdiff_empty_content):
     report = quality_summary._read_coverage_file("")
 
     assert report is False
-
-
-def test_get_reports_link(mocker, ci_artifacts_payload):
-    reports = quality_summary._get_reports_link("", "", "", "")
-
-    assert len(reports.keys()) == 3
-    check_report_url(reports, "eslint", "eslint.html")
-    check_report_url(reports, "flake8", "flake8.html")
-    check_report_url(reports, "coverage", "coverage.html")
 
 
 def test_extract_pr_data():
@@ -138,7 +126,7 @@ def test_update_status_summary_all_successful_reports(mocker):
     update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
 
     # Act
-    report_links = quality_summary._get_reports_link("owner", "project", "build", "repo")
+    report_links = CircleCommitDTO("owner", "project", "commit", "build", "qualitytool", "repo").get_reports_links()
     quality_summary._update_github_pr(
         summary_url, status_url, cov_report, quality_report, footers, report_links
     )
