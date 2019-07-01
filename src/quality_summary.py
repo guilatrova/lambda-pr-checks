@@ -84,32 +84,6 @@ def _read_quality_file(hash):
     return report, tool
 
 
-def _extract_pr_data(raw_url):
-    """
-    Extracts owner, repo and PR number from regular PR url.
-    Expected format: https://github.com/:owner/:repo/pull/:number
-    """
-    matches = re.findall(r"github\.com\/(.*)\/(.*)\/pull\/(\d+)", raw_url)[0]
-    return {"owner": matches[0], "repo": matches[1], "pr_number": matches[2]}
-
-
-def _get_pr_urls(raw_url, commit_sha):
-    """
-    Returns a tuple with Summary URL and Status URL
-    """
-    data = _extract_pr_data(raw_url)
-    owner = data["owner"]
-    repo = data["repo"]
-    pr_number = data["pr_number"]
-
-    summary_url = (
-        f"https://api.github.com/repos/{owner}/{repo}/issues/{pr_number}/comments"
-    )
-    statuses_url = f"https://api.github.com/repos/{owner}/{repo}/statuses/{commit_sha}"
-
-    return (summary_url, statuses_url)
-
-
 def _update_github_status(report, url, key, threshold, details_link):
     """
     Updates PR check status comparing data from report[key] to threshold
@@ -171,7 +145,7 @@ def ci_handler(event, context):
         # Expected format: https://github.com/:owner/:repo/pull/:number
         reference.repo_id = github.get_repo_id(reference.owner, reference.project)
 
-        summary_url, statuses_url = _get_pr_urls(cievent["pr_link"], reference.commit_sha)
+        summary_url, statuses_url = reference.get_pr_urls()
         report_links = reference.get_reports_link()
         footers = _get_footers(reference)
 

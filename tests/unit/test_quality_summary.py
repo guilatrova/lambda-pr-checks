@@ -51,33 +51,6 @@ def test_read_coverage_empty_file(mocker, covdiff_empty_content):
     assert report is False
 
 
-def test_extract_pr_data():
-    results = quality_summary._extract_pr_data(
-        "https://github.com/owner-here/repository-here/pull/200"
-    )
-
-    assert len(results) == 3
-    assert results["owner"] == "owner-here"
-    assert results["repo"] == "repository-here"
-    assert results["pr_number"] == "200"
-
-
-def test_get_pr_urls():
-    urls = quality_summary._get_pr_urls(
-        "https://github.com/owner-here/repository-here/pull/200", "commit-hash"
-    )
-
-    assert len(urls) == 2
-    assert (
-        urls[0]
-        == "https://api.github.com/repos/owner-here/repository-here/issues/200/comments"
-    )
-    assert (
-        urls[1]
-        == "https://api.github.com/repos/owner-here/repository-here/statuses/commit-hash"
-    )
-
-
 def test_update_github_status_failure(mocker):
     update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
     report = {"key": "30%"}

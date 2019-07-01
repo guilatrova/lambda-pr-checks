@@ -1,3 +1,6 @@
+import re
+
+
 class CircleCommitDTO:
     """
     DTO that represents the commit processed by CircleCI
@@ -63,3 +66,25 @@ class CircleCommitDTO:
         }
 
         return reports
+
+    def _extract_pr_data(self):
+        """
+        Extracts owner, repo and PR number from regular PR url.
+        Expected format: https://github.com/:owner/:repo/pull/:number
+        """
+        matches = re.findall(r"github\.com\/(.*)\/(.*)\/pull\/(\d+)", self.pr_link)[0]
+        return {"owner": matches[0], "project": matches[1], "pr_number": matches[2]}
+
+    def get_pr_urls(self):
+        """
+        Returns a tuple with Summary URL and Status URL
+        """
+        data = self._extract_pr_data()
+        pr_number = data["pr_number"]
+
+        summary_url = (
+            f"https://api.github.com/repos/{self.owner}/{self.project}/issues/{pr_number}/comments"
+        )
+        statuses_url = f"https://api.github.com/repos/{self.owner}/{self.project}/statuses/{self.commit_sha}"
+
+        return (summary_url, statuses_url)
