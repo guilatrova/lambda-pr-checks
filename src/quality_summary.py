@@ -2,14 +2,14 @@ import json
 import re
 
 try:
-    from thirdparties import github
+    from thirdparties import github, summary_factory
     from aws import dynamodb, s3
     from qualitytools.factory import create_quality_adapter
     from CircleCommitDTO import CircleCommitDTO
     import error_handler
     import security
 except ModuleNotFoundError:  # For tests
-    from .thirdparties import github
+    from .thirdparties import github, summary_factory
     from .aws import dynamodb, s3
     from .qualitytools.factory import create_quality_adapter
     from .CircleCommitDTO import CircleCommitDTO
@@ -17,11 +17,9 @@ except ModuleNotFoundError:  # For tests
     from . import security
 
 COV_EMPTY_TEXT = "No lines with coverage information in this diff."
-COV_REPORT_FOOTER = "See details in the [**coverage report**](#COV_LINK#)."
 COV_THRESHOLD = 80
 
 QUALITY_EMPTY_TEXT = "No lines with quality information in this diff."
-QUALITY_REPORT_FOOTER = "See details in the [**quality report**](#QUALITY_LINK#)."
 QUALITY_THRESHOLD = 100
 
 OK_RESPONSE = {
@@ -36,14 +34,13 @@ def _get_footers(reference):
     Returns two footers to be appended to summaries
     """
     report_links = reference.get_reports_link()
+    cov_link = report_links["coverage"].get("url", "")
+    tool = reference.quality_tool
+    qual_link = report_links[tool].get("url", "")
 
     return {
-        "quality": QUALITY_REPORT_FOOTER.replace(
-            "#QUALITY_LINK#", report_links["flake8"].get("url", "")
-        ),
-        "coverage": COV_REPORT_FOOTER.replace(
-            "#COV_LINK#", report_links["coverage"].get("url", "")
-        )
+        "quality": summary_factory.create_quality_footer(qual_link),
+        "coverage": summary_factory.create_coverage_footer(cov_link)
     }
 
 

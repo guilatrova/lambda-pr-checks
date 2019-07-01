@@ -34,6 +34,8 @@ COVERAGE_REPORT = """
 #FOOTER#
 """
 
+COV_REPORT_FOOTER = "See details in the [**coverage report**](#COV_LINK#)."
+
 QUALITY_REPORT = """
 ## Quality Report
 
@@ -51,6 +53,8 @@ QUALITY_REPORT = """
 
 #FOOTER#
 """
+
+QUALITY_REPORT_FOOTER = "See details in the [**quality report**](#QUALITY_LINK#)."
 
 
 def truncate_string(string, width):
@@ -95,6 +99,10 @@ def create_coverage_summary(report, footer):
     return ""
 
 
+def create_coverage_footer(link):
+    return COV_REPORT_FOOTER.replace("#COV_LINK#", link)
+
+
 def create_quality_summary(report, footer):
     if report:
         total = "+ Total lines"
@@ -110,6 +118,10 @@ def create_quality_summary(report, footer):
         return _create_summary_report(QUALITY_REPORT, report, resume, footer)
 
     return ""
+
+
+def create_quality_footer(link):
+    return QUALITY_REPORT_FOOTER.replace("#QUALITY_LINK#", link)
 
 
 def create_standard_summary(report, resume):
