@@ -183,9 +183,8 @@ def test_update_status_summary_all_successful_reports(mocker):
     footers = {"quality": "quality", "coverage": "coverage"}
     status_url = "status_url"
     summary_url = "summary_url"
-    cov_link = "cov"
-    qual_link = "qual"
-    report_links = {"coverage": cov_link, "quality": qual_link}
+    cov_link = "https://build-repo-gh.circle-artifacts.com/0/quality-reports/coverage.html"
+    qual_link = "https://build-repo-gh.circle-artifacts.com/0/quality-reports/flake8.html"
 
     write_summary_mock = mocker.patch.object(
         quality_summary.github, "write_quality_summary"
@@ -193,6 +192,7 @@ def test_update_status_summary_all_successful_reports(mocker):
     update_status_mock = mocker.patch.object(quality_summary.github, "update_pr_status")
 
     # Act
+    report_links = quality_summary._get_reports_link("owner", "project", "build", "repo")
     quality_summary._update_github_pr(
         summary_url, status_url, cov_report, quality_report, footers, report_links
     )

@@ -181,8 +181,11 @@ def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, foo
     )
 
     # PR checks
-    _update_github_status(cov_report, statuses_url, "coverage", COV_THRESHOLD, report_links.get("coverage"))
-    _update_github_status(quality_report, statuses_url, "quality", QUALITY_THRESHOLD, report_links.get("quality"))
+    cov_link = report_links.get("coverage", {}).get("url", "")
+    qual_link = report_links.get("flake8", {}).get("url", "")
+
+    _update_github_status(cov_report, statuses_url, "coverage", COV_THRESHOLD, cov_link)
+    _update_github_status(quality_report, statuses_url, "quality", QUALITY_THRESHOLD, qual_link)
 
 
 # Although it's CI, GitHub fail response fits good though
@@ -214,6 +217,8 @@ def ci_handler(event, context):
         _update_github_pr(
             summary_url, statuses_url, cov_report, quality_report, footers, report_links
         )
+    else:
+        print("CI event will be ignored because PR_LINK is empty")
 
     return OK_RESPONSE
 
