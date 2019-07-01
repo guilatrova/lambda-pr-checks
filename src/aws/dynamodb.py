@@ -40,7 +40,7 @@ def get_code_freeze_config():
 
 
 # Quality
-def save_reports(cov_report, quality_report, **kwargs):
+def save_reports(cov_report, quality_report, quality_tool, **kwargs):
     table = _get_table(QUALITY_TABLE)
 
     # Below line is just to be obvious and show the Key, it's not really required
@@ -50,6 +50,7 @@ def save_reports(cov_report, quality_report, **kwargs):
         "commit_sha": commit_sha,
         "cov_report": cov_report,
         "quality_report": quality_report,
+        "quality_tool": quality_tool,
         **kwargs,
     }
 

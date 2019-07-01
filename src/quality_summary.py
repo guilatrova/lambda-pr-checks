@@ -96,12 +96,13 @@ def _read_quality_file(hash):
     Generates a quality report with info extracted from S3 file
     The report contains:
         "target_branch", "total", "violations", "quality", "issues" and "files"
+    Rerturns a tuple with the report and quality tool
     """
     content = s3.get_quality_file(hash)
 
-    quality_adapter = create_quality_adapter(content)
+    quality_adapter, tool = create_quality_adapter(content)
     report = quality_adapter.generate_report()
-    return report
+    return report, tool
 
 
 def _extract_pr_data(raw_url):
@@ -183,8 +184,8 @@ def ci_handler(event, context):
     commit_sha = cievent["commit_sha"]
 
     cov_report = _read_coverage_file(commit_sha)
-    quality_report = _read_quality_file(commit_sha)
-    dynamodb.save_reports(cov_report, quality_report, **cievent)
+    quality_report, quality_tool = _read_quality_file(commit_sha)
+    dynamodb.save_reports(cov_report, quality_report, quality_tool, **cievent)
 
     if cievent["pr_link"]:
         # Expected format: https://github.com/:owner/:repo/pull/:number

@@ -34,24 +34,26 @@ def test_flake8_read_quality_file(mocker, flake8_qualitydiff_content):
 def test_flake8_read_quality_file_single_line(mocker, flake8_qualitydiffsingle_content):
     mocker.patch.object(quality_summary.s3, "get_quality_file", return_value=flake8_qualitydiffsingle_content)
 
-    report = quality_summary._read_quality_file("")
+    report, tool = quality_summary._read_quality_file("")
 
     assert report["total"] == "1"
     assert report["violations"] == "1"
+    assert tool == "flake8"
 
 
 def test_flake8_read_quality_empty_file(mocker, flake8_qualitydiff_empty_content):
     mocker.patch.object(quality_summary.s3, "get_quality_file", return_value=flake8_qualitydiff_empty_content)
 
-    report = quality_summary._read_quality_file("")
+    report, tool = quality_summary._read_quality_file("")
 
     assert report is False
+    assert tool == "flake8"
 
 
 def test_flake8_read_quality_file(mocker, flake8_qualitydiff_content):
     mocker.patch.object(quality_summary.s3, "get_quality_file", return_value=flake8_qualitydiff_content)
 
-    report = quality_summary._read_quality_file("")
+    report, tool = quality_summary._read_quality_file("")
 
     # Issues
     assert len(report["issues"]) == 7
@@ -76,12 +78,13 @@ def test_flake8_read_quality_file(mocker, flake8_qualitydiff_content):
     assert report["total"] == "589"
     assert report["violations"] == "5"
     assert report["quality"] == "99%"
+    assert tool == "flake8"
 
 
 def test_eslint_read_quality_file(mocker, eslint_qualitydiff_content):
     mocker.patch.object(quality_summary.s3, "get_quality_file", return_value=eslint_qualitydiff_content)
 
-    report = quality_summary._read_quality_file("")
+    report, tool = quality_summary._read_quality_file("")
 
     # Issues
     assert len(report["issues"]) == 3
@@ -106,3 +109,4 @@ def test_eslint_read_quality_file(mocker, eslint_qualitydiff_content):
     assert report["total"] == "146"
     assert report["violations"] == "3"
     assert report["quality"] == "97%"
+    assert tool == "eslint"

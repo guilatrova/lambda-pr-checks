@@ -61,7 +61,7 @@ def test_create_quality_summary(mocker, flake8_qualitydiff_content):
         quality_summary.s3, "get_quality_file", return_value=flake8_qualitydiff_content
     )
 
-    report = quality_summary._read_quality_file("")
+    report, tool = quality_summary._read_quality_file("")
 
     result = summary_factory.create_quality_summary(report, "footer_message")
 
@@ -75,6 +75,7 @@ def test_create_quality_summary(mocker, flake8_qualitydiff_content):
     assert "589 \n" in result
     assert "5 \n" in result
     assert "99% \n" in result
+    assert tool == "flake8"
 
     # Content
     assert "\n...ple/workers/feedback/models.py  80.0% " in result

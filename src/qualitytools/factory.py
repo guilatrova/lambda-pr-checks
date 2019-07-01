@@ -8,6 +8,6 @@ def create_quality_adapter(content):
     for key in adapter_map.keys():
         if f"Quality Report: {key}" in content:
             adapter = adapter_map[key]
-            return adapter(content)
+            return adapter(content), key
 
     raise Exception("Unknown adapter")
