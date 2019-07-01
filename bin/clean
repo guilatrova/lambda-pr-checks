@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm -r .aws-sam
+rm packaged.yaml
