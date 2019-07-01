@@ -5,12 +5,14 @@ try:
     from thirdparties import github
     from aws import dynamodb, s3
     from qualitytools.factory import create_quality_adapter
+    from CircleCommitDTO import CircleCommitDTO
     import error_handler
     import security
 except ModuleNotFoundError:  # For tests
     from .thirdparties import github
     from .aws import dynamodb, s3
     from .qualitytools.factory import create_quality_adapter
+    from .CircleCommitDTO import CircleCommitDTO
     from . import error_handler
     from . import security
 
@@ -29,40 +31,20 @@ OK_RESPONSE = {
 }
 
 
-def _get_footers(owner, project, build_num, repo_id, report_links):
+def _get_footers(reference):
     """
     Returns two footers to be appended to summaries
     """
+    report_links = reference.get_reports_link()
+
     return {
         "quality": QUALITY_REPORT_FOOTER.replace(
             "#QUALITY_LINK#", report_links["flake8"].get("url", "")
         ),
         "coverage": COV_REPORT_FOOTER.replace(
             "#COV_LINK#", report_links["coverage"].get("url", "")
-        ),
+        )
     }
-
-
-def _get_reports_link(owner, project, build_num, repo_id):
-    """
-    Returns artifacts links from CircleCI
-    """
-    reports = {
-        "coverage": {
-            "name": "coverage.html",
-            "url": f"https://{build_num}-{repo_id}-gh.circle-artifacts.com/0/quality-reports/coverage.html",
-        },
-        "flake8": {
-            "name": "flake8.html",
-            "url": f"https://{build_num}-{repo_id}-gh.circle-artifacts.com/0/quality-reports/flake8.html",
-        },
-        "eslint": {
-            "name": "eslint.html",
-            "url": f"https://{build_num}-{repo_id}-gh.circle-artifacts.com/0/quality-reports/eslint.html",
-        },
-    }
-
-    return reports
 
 
 def _read_coverage_file(hash):
@@ -181,22 +163,20 @@ def ci_handler(event, context):
     "commit_sha", "owner", "project", "build_num", "pr_link" (pr_link might be empty).
     """
     cievent = json.loads(event.get("body"))
-    commit_sha = cievent["commit_sha"]
 
-    cov_report = _read_coverage_file(commit_sha)
-    quality_report, quality_tool = _read_quality_file(commit_sha)
+    cov_report = _read_coverage_file(cievent["commit_sha"])
+    quality_report, quality_tool = _read_quality_file(cievent["commit_sha"])
     dynamodb.save_reports(cov_report, quality_report, quality_tool, **cievent)
 
-    if cievent["pr_link"]:
+    reference = CircleCommitDTO.create_from_circleci(cievent, quality_tool)
+
+    if reference.pr_link:
         # Expected format: https://github.com/:owner/:repo/pull/:number
-        repo_id = github.get_repo_id(cievent["owner"], cievent["project"])
-        summary_url, statuses_url = _get_pr_urls(cievent["pr_link"], commit_sha)
-        report_links = _get_reports_link(
-            cievent["owner"], cievent["project"], cievent["build_num"], repo_id
-        )
-        footers = _get_footers(
-            cievent["owner"], cievent["project"], cievent["build_num"], repo_id, report_links
-        )
+        reference.repo_id = github.get_repo_id(reference.owner, reference.project)
+
+        summary_url, statuses_url = _get_pr_urls(cievent["pr_link"], reference.commit_sha)
+        report_links = reference.get_reports_link()
+        footers = _get_footers(reference)
 
         _update_github_pr(
             summary_url, statuses_url, cov_report, quality_report, footers, report_links
@@ -219,14 +199,10 @@ def gh_handler(event, context):
     report = dynamodb.get_report(commit_sha)
 
     if report:
-        report_links = _get_reports_link(
-            report["owner"], report["project"], report["build_num"], repo_id
-        )
+        reference = CircleCommitDTO.create_from_dynamodb(report, repo_id)
+        report_links = reference.get_reports_link()
+        footers = _get_footers(reference)
 
-        footers = _get_footers(
-            report["owner"], report["project"], report["build_num"],
-            repo_id, report_links
-        )
         cov_report = report.get("cov_report", False)
         quality_report = report.get("quality_report", False)
 
