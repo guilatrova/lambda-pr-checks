@@ -17,6 +17,7 @@ class CircleCommitDTO:
 
         # CircleCI
         self.build_num = build_num
+        self.quality_tool = quality_tool
         self.repo_id = repo_id
         self.pr_link = pr_link
 
