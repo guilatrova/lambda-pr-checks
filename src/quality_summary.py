@@ -33,7 +33,7 @@ def _get_footers(reference):
     """
     Returns two footers to be appended to summaries
     """
-    report_links = reference.get_reports_link()
+    report_links = reference.get_reports_links()
     cov_link = report_links["coverage"].get("url", "")
     tool = reference.quality_tool
     qual_link = report_links[tool].get("url", "")
@@ -146,7 +146,7 @@ def ci_handler(event, context):
         reference.repo_id = github.get_repo_id(reference.owner, reference.project)
 
         summary_url, statuses_url = reference.get_pr_urls()
-        report_links = reference.get_reports_link()
+        report_links = reference.get_reports_links()
         footers = _get_footers(reference)
 
         _update_github_pr(
@@ -171,7 +171,7 @@ def gh_handler(event, context):
 
     if report:
         reference = CircleCommitDTO.create_from_dynamodb(report, repo_id)
-        report_links = reference.get_reports_link()
+        report_links = reference.get_reports_links()
         footers = _get_footers(reference)
 
         cov_report = report.get("cov_report", False)
