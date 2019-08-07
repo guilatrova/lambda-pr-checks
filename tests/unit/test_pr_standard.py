@@ -117,7 +117,7 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker,
         pr_standard.github, "update_pr_status", return_value=MagicMock(ok=True)
     )
     summary_mock = mocker.patch.object(
-        pr_standard.github, "write_standard_summary", return_value=MagicMock()
+        pr_standard.github, "delete_standard_summary", return_value=MagicMock()
     )
     mocker.patch.object(
         pr_standard, "_validate_pr", return_value=(report, True, "reason")
@@ -132,9 +132,7 @@ def test_lambda_handler(event_creator, incoming_open_pr_payload, mocker,
         "reason",
         mocked_docs_link
     )
-    summary_mock.assert_called_once_with(
-        github_payload["pull_request"]["comments_url"], report, "reason"
-    )
+    summary_mock.assert_called_once_with(github_payload["pull_request"]["comments_url"])
 
     assert response == pr_standard.OK_RESPONSE
 

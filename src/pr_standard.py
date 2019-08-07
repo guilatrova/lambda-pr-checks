@@ -119,6 +119,7 @@ def handler(event, context):
     """
     ghevent = json.loads(event.get("body"))
     status_url = ghevent["pull_request"]["statuses_url"]
+    comments_url = ghevent["pull_request"]["comments_url"]
 
     report, result, reason = _validate_pr(ghevent["pull_request"])
     status = "success" if result else "failure"
@@ -127,9 +128,13 @@ def handler(event, context):
     target_url = os.environ.get("DOCS_STANDARD_LINK", "")
     github.update_pr_status(status_url, status, CHECK_TITLE, reason, target_url)
 
-    print(f"Writing PR summary for report: {report}")
-    github.write_standard_summary(
-        ghevent["pull_request"]["comments_url"], report, reason
-    )
+    if result:
+        print(f"Everything is perfect: {report}, no standard summary will be written")
+        github.delete_standard_summary(comments_url)
+    else:
+        print(f"Writing PR summary for report: {report}")
+        github.write_standard_summary(
+            comments_url, report, reason
+        )
 
     return OK_RESPONSE

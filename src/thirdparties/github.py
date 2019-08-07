@@ -79,6 +79,13 @@ def get_repo_id(owner, repo):
     return content["id"]
 
 
+def delete_standard_summary(url):
+    delete_url = _get_comment_url(url, "Guidelines Report")
+    if delete_url:
+        headers = _get_gh_headers()
+        return requests.delete(delete_url, headers=headers)
+
+
 def write_standard_summary(url, report, resume):
     headers = _get_gh_headers()
     body = {"body": summary_factory.create_standard_summary(report, resume)}
