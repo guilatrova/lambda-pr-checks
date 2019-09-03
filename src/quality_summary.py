@@ -108,7 +108,7 @@ def _update_github_status(report, url, key, threshold, details_link):
     github.update_pr_status(url, pr_state, f"FineTune {title}", description, details_link)
 
 
-def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, footers, report_links):
+def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, footers, report_links, quality_tool):
     """
     Updates GitHub PR with a summary and two checks for coverage and quality
     """
@@ -119,7 +119,7 @@ def _update_github_pr(summary_url, statuses_url, cov_report, quality_report, foo
 
     # PR checks
     cov_link = report_links.get("coverage", {}).get("url", "")
-    qual_link = report_links.get("flake8", {}).get("url", "")
+    qual_link = report_links.get(quality_tool, {}).get("url", "")
 
     _update_github_status(cov_report, statuses_url, "coverage", COV_THRESHOLD, cov_link)
     _update_github_status(quality_report, statuses_url, "quality", QUALITY_THRESHOLD, qual_link)
@@ -150,7 +150,7 @@ def ci_handler(event, context):
         footers = _get_footers(reference)
 
         _update_github_pr(
-            summary_url, statuses_url, cov_report, quality_report, footers, report_links
+            summary_url, statuses_url, cov_report, quality_report, footers, report_links, quality_tool
         )
     else:
         print("CI event will be ignored because PR_LINK is empty")
@@ -178,7 +178,7 @@ def gh_handler(event, context):
         quality_report = report.get("quality_report", False)
 
         _update_github_pr(
-            summary_url, statuses_url, cov_report, quality_report, footers, report_links
+            summary_url, statuses_url, cov_report, quality_report, footers, report_links, reference.quality_tool
         )
     else:
         print(f"No report found for {commit_sha}")

@@ -91,7 +91,7 @@ def test_update_status_summary_all_successful_reports(mocker):
     status_url = "status_url"
     summary_url = "summary_url"
     cov_link = "https://build-repo-gh.circle-artifacts.com/0/quality-reports/coverage.html"
-    qual_link = "https://build-repo-gh.circle-artifacts.com/0/quality-reports/flake8.html"
+    qual_link = "https://build-repo-gh.circle-artifacts.com/0/quality-reports/eslint.html"
 
     write_summary_mock = mocker.patch.object(
         quality_summary.github, "write_quality_summary"
@@ -101,7 +101,7 @@ def test_update_status_summary_all_successful_reports(mocker):
     # Act
     report_links = CircleCommitDTO("owner", "project", "commit", "build", "qualitytool", "repo").get_reports_links()
     quality_summary._update_github_pr(
-        summary_url, status_url, cov_report, quality_report, footers, report_links
+        summary_url, status_url, cov_report, quality_report, footers, report_links, "eslint"
     )
     write_summary_mock.assert_called_once_with(
         summary_url, cov_report, quality_report, footers["coverage"], footers["quality"]
