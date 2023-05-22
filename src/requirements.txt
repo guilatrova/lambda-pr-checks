@@ -1,4 +1,4 @@
-requests==2.20.0
+requests==2.31.0
 # Pinned both versioms below to avoid random syntax errors ocurring in boto within lambda
 boto3==1.9.60
 futures==2.2.0
